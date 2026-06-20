@@ -31,29 +31,40 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================================
 // FETCH DATA FROM API
 // ============================================================
+// ============================================================
+// FETCH DATA FROM API
+// ============================================================
 async function refreshData() {
     try {
+        console.log('📡 Fetching data from API...');
         const response = await fetch(API_URL);
         const data = await response.json();
         
+        console.log('📊 Data received:', data);
+        
         if (data.success) {
-            // Update dashboard
-            updateDashboard(data);
+            // ONLY update dashboard if we're on the dashboard page
+            if (document.getElementById('tempDisplay')) {
+                console.log('🖥️ Updating dashboard...');
+                updateDashboard(data);
+            }
             
-            // Update inventory page if on that page
+            // ONLY update inventory if we're on inventory page
             if (document.getElementById('inventoryBody')) {
+                console.log('📋 Updating inventory page...');
                 updateInventoryPage(data);
             }
             
-            // Update alerts page if on that page
+            // ONLY update alerts if we're on alerts page
             if (document.getElementById('alertList')) {
+                console.log('🔔 Updating alerts page...');
                 updateAlertsPage(data);
             }
         } else {
-            console.error('API Error:', data.error);
+            console.error('❌ API Error:', data.error);
         }
     } catch (error) {
-        console.error('Network Error:', error);
+        console.error('❌ Network Error:', error);
     }
 }
 
