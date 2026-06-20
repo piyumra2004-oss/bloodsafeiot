@@ -4,7 +4,7 @@
 // ============================================================
 
 // !!! IMPORTANT: Replace this with YOUR Web App URL !!!
-const API_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxrhEDd6YKGXuuM6hnP5H97tpcUV7_z21vTSgNLZf0AVA7Eh-ZBABPMm2qKYgiYtOlo/exec';
 
 let updateInterval = null;
 
