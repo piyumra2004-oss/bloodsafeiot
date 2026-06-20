@@ -1,6 +1,6 @@
 // ============================================================
-// BLOODSAFE IoT - Main JavaScript
-// Replace YOUR_API_URL with your Google Apps Script URL
+// BLOODSAFE IoT - Complete JavaScript
+// Suwa Setha Hospital Blood Bank
 // ============================================================
 
 // !!! IMPORTANT: Replace this with YOUR Web App URL !!!
@@ -8,7 +8,9 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbxrhEDd6YKGXuuM6hnP5H97
 
 let updateInterval = null;
 
-// ---------- ON PAGE LOAD ----------
+// ============================================================
+// PAGE LOAD
+// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     // Check login
     var user = JSON.parse(localStorage.getItem('user'));
@@ -26,21 +28,26 @@ document.addEventListener('DOMContentLoaded', function() {
     updateInterval = setInterval(refreshData, 30000);
 });
 
-// ---------- FETCH DATA ----------
+// ============================================================
+// FETCH DATA FROM API
+// ============================================================
 async function refreshData() {
     try {
         const response = await fetch(API_URL);
         const data = await response.json();
         
         if (data.success) {
-            updateDashboard(data);  // ← Updates dashboard
+            // Update dashboard
+            updateDashboard(data);
             
-            // ← NEW: Checks which page we're on
+            // Update inventory page if on that page
             if (document.getElementById('inventoryBody')) {
-                updateInventoryPage(data);  // ← Updates inventory
+                updateInventoryPage(data);
             }
+            
+            // Update alerts page if on that page
             if (document.getElementById('alertList')) {
-                updateAlertsPage(data);  // ← Updates alerts
+                updateAlertsPage(data);
             }
         } else {
             console.error('API Error:', data.error);
@@ -49,7 +56,10 @@ async function refreshData() {
         console.error('Network Error:', error);
     }
 }
-// ---------- UPDATE DASHBOARD ----------
+
+// ============================================================
+// DASHBOARD
+// ============================================================
 function updateDashboard(data) {
     // Temperature
     const temp = data.temperature;
@@ -98,13 +108,12 @@ function updateDashboard(data) {
     // Alert Banner
     updateAlertBanner(status, temp, stock);
     
-    // Inventory
+    // Inventory Grid
     if (data.inventory) {
         updateBloodGrid(data.inventory);
     }
 }
 
-// ---------- ALERT BANNER ----------
 function updateAlertBanner(status, temp, stock) {
     const banner = document.getElementById('alertBanner');
     
@@ -120,7 +129,6 @@ function updateAlertBanner(status, temp, stock) {
     }
 }
 
-// ---------- BLOOD GRID ----------
 function updateBloodGrid(inventory) {
     const grid = document.getElementById('bloodGrid');
     if (!grid) return;
@@ -133,156 +141,24 @@ function updateBloodGrid(inventory) {
         'CRITICAL': 'critical'
     };
     
-    for (const [group, data] of Object.entries(inventory)) {
+    for (const [group, info] of Object.entries(inventory)) {
         const item = document.createElement('div');
         item.className = 'blood-item';
         item.innerHTML = `
             <span class="blood-type">${group}</span>
-            <span>${data.quantity} units</span>
-            <span class="dot ${dotColors[data.status] || 'ok'}"></span>
+            <span>${info.quantity} units</span>
+            <span class="dot ${dotColors[info.status] || 'ok'}"></span>
         `;
         grid.appendChild(item);
     }
 }
 
-// ---------- INVENTORY PAGE ----------
-function updateInventoryPage(data) {
-    // Update total units
-    document.getElementById('totalUnits').textContent = data.stock || 0;
-    
-    // Count low stock types
-    let lowCount = 0;
-    let criticalCount = 0;
-    
-    if (data.inventory) {
-        for (const [group, info] of Object.entries(data.inventory)) {
-            if (info.status === 'LOW') lowCount++;
-            if (info.status === 'CRITICAL') criticalCount++;
-        }
-    }
-    
-    document.getElementById('lowStockCount').textContent = lowCount + criticalCount;
-    
-    // Update inventory table
-    updateInventoryTable(data.inventory);
-}
-
-function updateInventoryTable(inventory) {
-    const tbody = document.getElementById('inventoryBody');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    
-    if (!inventory) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888;">No data available</td></tr>';
-        return;
-    }
-    
-    for (const [group, info] of Object.entries(inventory)) {
-        const row = document.createElement('tr');
-        
-        let badgeClass = 'OK';
-        if (info.status === 'LOW') badgeClass = 'LOW';
-        if (info.status === 'CRITICAL') badgeClass = 'CRITICAL';
-        
-        row.innerHTML = `
-            <td><strong>${group}</strong></td>
-            <td>${info.quantity}</td>
-            <td><span class="status-badge ${badgeClass}">${info.status}</span></td>
-        `;
-        tbody.appendChild(row);
-    }
-}
-
-// ---------- ALERTS PAGE ----------
-function updateAlertsPage(data) {
-    const alertList = document.getElementById('alertList');
-    if (!alertList) return;
-    
-    // Sample alerts for demo
-    const alerts = [
-        { type: 'INFO', message: 'System initialized successfully', time: '8:28 PM' },
-        { type: 'WARNING', message: 'Low stock detected for AB- blood type', time: '8:15 PM' },
-        { type: 'CRITICAL', message: 'Temperature alert: 10°C detected', time: '7:45 PM' },
-        { type: 'WARNING', message: 'Stock below 30 units', time: '7:30 PM' },
-        { type: 'INFO', message: 'Restock completed: +10 units', time: '7:00 PM' }
-    ];
-    
-    alertList.innerHTML = '';
-    
-    alerts.forEach(alert => {
-        const item = document.createElement('div');
-        item.className = 'alert-item';
-        item.dataset.type = alert.type;
-        item.innerHTML = `
-            <span class="alert-type ${alert.type}">${alert.type}</span>
-            <span class="alert-message">${alert.message}</span>
-            <span class="alert-time">${alert.time}</span>
-        `;
-        alertList.appendChild(item);
-    });
-}
-
-// ---------- FILTER ALERTS ----------
-function filterAlerts(filter) {
-    const items = document.querySelectorAll('.alert-item');
-    items.forEach(item => {
-        if (filter === 'ALL') {
-            item.style.display = 'flex';
-        } else {
-            const type = item.dataset.type;
-            item.style.display = type === filter ? 'flex' : 'none';
-        }
-    });
-    
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    if (event && event.target) {
-        event.target.classList.add('active');
-    }
-}
-
-// ---------- UPDATE STOCK ----------
-async function updateStock(change) {
-    try {
-        await fetch(API_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'updateStock',
-                change: change
-            })
-        });
-        setTimeout(refreshData, 1000);
-    } catch (error) {
-        console.error('Error updating stock:', error);
-    }
-}
-
-// ---------- SIMULATE CRITICAL (Demo) ----------
-function simulateCritical() {
-    document.getElementById('tempDisplay').textContent = '10°C';
-    document.getElementById('tempStatus').textContent = '🚨 CRITICAL';
-    document.getElementById('tempStatus').className = 'stat-status critical';
-    document.querySelector('.temp-card').classList.add('critical');
-    const banner = document.getElementById('alertBanner');
-    banner.className = 'alert-banner critical';
-    banner.textContent = '🚨 CRITICAL: Temperature 10°C - Immediate Action!';
-}
-
-// ---------- LOGOUT ----------
-function logout() {
-    localStorage.removeItem('user');
-    clearInterval(updateInterval);
-    window.location.href = 'login.html';
-}
 // ============================================================
-// INVENTORY PAGE FUNCTIONS
+// INVENTORY PAGE
 // ============================================================
-
 function updateInventoryPage(data) {
+    console.log('Updating inventory page...', data);
+    
     // Update total units
     const totalUnits = document.getElementById('totalUnits');
     if (totalUnits) {
@@ -311,7 +187,10 @@ function updateInventoryPage(data) {
 
 function updateInventoryTable(inventory) {
     const tbody = document.getElementById('inventoryBody');
-    if (!tbody) return;
+    if (!tbody) {
+        console.log('inventoryBody not found');
+        return;
+    }
     
     tbody.innerHTML = '';
     
@@ -337,20 +216,25 @@ function updateInventoryTable(inventory) {
 }
 
 // ============================================================
-// ALERTS PAGE FUNCTIONS
+// ALERTS PAGE
 // ============================================================
-
 function updateAlertsPage(data) {
-    const alertList = document.getElementById('alertList');
-    if (!alertList) return;
+    console.log('Updating alerts page...', data);
     
-    // Sample alerts for demo
+    const alertList = document.getElementById('alertList');
+    if (!alertList) {
+        console.log('alertList not found');
+        return;
+    }
+    
+    // Sample alerts
+    const now = new Date().toLocaleTimeString();
     const alerts = [
-        { type: 'INFO', message: 'System initialized successfully', time: new Date().toLocaleTimeString() },
-        { type: 'WARNING', message: 'Low stock detected for AB- blood type', time: new Date().toLocaleTimeString() },
-        { type: 'CRITICAL', message: 'Temperature alert: 10°C detected', time: new Date().toLocaleTimeString() },
-        { type: 'WARNING', message: 'Stock below 30 units', time: new Date().toLocaleTimeString() },
-        { type: 'INFO', message: 'Restock completed: +10 units', time: new Date().toLocaleTimeString() }
+        { type: 'INFO', message: 'System initialized successfully', time: now },
+        { type: 'WARNING', message: 'Low stock detected for AB- blood type', time: now },
+        { type: 'CRITICAL', message: 'Temperature alert: 10°C detected', time: now },
+        { type: 'WARNING', message: 'Stock below 30 units', time: now },
+        { type: 'INFO', message: 'Restock completed: +10 units', time: now }
     ];
     
     alertList.innerHTML = '';
@@ -382,12 +266,48 @@ function filterAlerts(filter) {
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    // Find the clicked button
-    const buttons = document.querySelectorAll('.filter-btn');
-    buttons.forEach(btn => {
+    
+    // Find and activate the clicked button
+    document.querySelectorAll('.filter-btn').forEach(btn => {
         if (btn.textContent.toUpperCase() === filter || 
             btn.textContent === filter) {
             btn.classList.add('active');
         }
     });
+}
+
+// ============================================================
+// STOCK MANAGEMENT
+// ============================================================
+async function updateStock(change) {
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'updateStock',
+                change: change
+            })
+        });
+        setTimeout(refreshData, 1000);
+    } catch (error) {
+        console.error('Error updating stock:', error);
+    }
+}
+
+function simulateCritical() {
+    document.getElementById('tempDisplay').textContent = '10°C';
+    document.getElementById('tempStatus').textContent = '🚨 CRITICAL';
+    document.getElementById('tempStatus').className = 'stat-status critical';
+    document.querySelector('.temp-card').classList.add('critical');
+    const banner = document.getElementById('alertBanner');
+    banner.className = 'alert-banner critical';
+    banner.textContent = '🚨 CRITICAL: Temperature 10°C - Immediate Action!';
+}
+
+function logout() {
+    localStorage.removeItem('user');
+    clearInterval(updateInterval);
+    window.location.href = 'login.html';
 }
