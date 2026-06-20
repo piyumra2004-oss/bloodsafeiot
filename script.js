@@ -279,3 +279,116 @@ function logout() {
     clearInterval(updateInterval);
     window.location.href = 'login.html';
 }
+// ============================================================
+// INVENTORY PAGE FUNCTIONS
+// ============================================================
+
+function updateInventoryPage(data) {
+    // Update total units
+    const totalUnits = document.getElementById('totalUnits');
+    if (totalUnits) {
+        totalUnits.textContent = data.stock || 0;
+    }
+    
+    // Count low stock types
+    let lowCount = 0;
+    let criticalCount = 0;
+    
+    if (data.inventory) {
+        for (const [group, info] of Object.entries(data.inventory)) {
+            if (info.status === 'LOW') lowCount++;
+            if (info.status === 'CRITICAL') criticalCount++;
+        }
+    }
+    
+    const lowStockCount = document.getElementById('lowStockCount');
+    if (lowStockCount) {
+        lowStockCount.textContent = lowCount + criticalCount;
+    }
+    
+    // Update inventory table
+    updateInventoryTable(data.inventory);
+}
+
+function updateInventoryTable(inventory) {
+    const tbody = document.getElementById('inventoryBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (!inventory) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888;">No data available</td></tr>';
+        return;
+    }
+    
+    for (const [group, info] of Object.entries(inventory)) {
+        const row = document.createElement('tr');
+        
+        let badgeClass = 'OK';
+        if (info.status === 'LOW') badgeClass = 'LOW';
+        if (info.status === 'CRITICAL') badgeClass = 'CRITICAL';
+        
+        row.innerHTML = `
+            <td><strong>${group}</strong></td>
+            <td>${info.quantity}</td>
+            <td><span class="status-badge ${badgeClass}">${info.status}</span></td>
+        `;
+        tbody.appendChild(row);
+    }
+}
+
+// ============================================================
+// ALERTS PAGE FUNCTIONS
+// ============================================================
+
+function updateAlertsPage(data) {
+    const alertList = document.getElementById('alertList');
+    if (!alertList) return;
+    
+    // Sample alerts for demo
+    const alerts = [
+        { type: 'INFO', message: 'System initialized successfully', time: new Date().toLocaleTimeString() },
+        { type: 'WARNING', message: 'Low stock detected for AB- blood type', time: new Date().toLocaleTimeString() },
+        { type: 'CRITICAL', message: 'Temperature alert: 10°C detected', time: new Date().toLocaleTimeString() },
+        { type: 'WARNING', message: 'Stock below 30 units', time: new Date().toLocaleTimeString() },
+        { type: 'INFO', message: 'Restock completed: +10 units', time: new Date().toLocaleTimeString() }
+    ];
+    
+    alertList.innerHTML = '';
+    
+    alerts.forEach(alert => {
+        const item = document.createElement('div');
+        item.className = 'alert-item';
+        item.dataset.type = alert.type;
+        item.innerHTML = `
+            <span class="alert-type ${alert.type}">${alert.type}</span>
+            <span class="alert-message">${alert.message}</span>
+            <span class="alert-time">${alert.time}</span>
+        `;
+        alertList.appendChild(item);
+    });
+}
+
+function filterAlerts(filter) {
+    const items = document.querySelectorAll('.alert-item');
+    items.forEach(item => {
+        if (filter === 'ALL') {
+            item.style.display = 'flex';
+        } else {
+            const type = item.dataset.type;
+            item.style.display = type === filter ? 'flex' : 'none';
+        }
+    });
+    
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    // Find the clicked button
+    const buttons = document.querySelectorAll('.filter-btn');
+    buttons.forEach(btn => {
+        if (btn.textContent.toUpperCase() === filter || 
+            btn.textContent === filter) {
+            btn.classList.add('active');
+        }
+    });
+}
