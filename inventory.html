@@ -1,78 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BloodSafe IoT - Inventory</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BloodSafe IoT - Inventory</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="nav-brand">🩸 BloodSafe IoT</div>
-    <div class="nav-links">
-      <a href="index.html">Dashboard</a>
-      <a href="inventory.html" class="active">Inventory</a>
-      <a href="alerts.html">Alerts</a>
-      <span id="userDisplay" class="user-badge">👤 Officer</span>
-      <button onclick="logout()" class="logout-btn">Logout</button>
-    </div>
-  </nav>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">🩸 BloodSafe IoT</div>
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="inventory.html" class="active">Inventory</a>
+            <a href="alerts.html">Alerts</a>
+            <span id="userDisplay" class="user-badge">👤 Officer</span>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+    </nav>
 
-  <!-- Main Content -->
-  <main class="dashboard">
-    <h1>📋 Blood Inventory Management</h1>
-    
-    <!-- Summary Cards -->
-    <div class="inventory-summary">
-      <div class="summary-card">
-        <h3>Total Units</h3>
-        <p id="totalUnits">--</p>
-      </div>
-      <div class="summary-card">
-        <h3>Blood Types</h3>
-        <p>8 Types</p>
-      </div>
-      <div class="summary-card">
-        <h3>Low Stock Types</h3>
-        <p id="lowStockCount">--</p>
-      </div>
-    </div>
+    <!-- Main Content -->
+    <main class="dashboard">
+        <h1>📋 Blood Inventory Management</h1>
 
-    <!-- Inventory Table -->
-    <div class="section">
-      <h2>Blood Inventory Details</h2>
-      <div class="inventory-table-container">
-        <table class="inventory-table">
-          <thead>
-            <tr>
-              <th>Blood Group</th>
-              <th>Quantity</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="inventoryBody">
-            <!-- Populated by JavaScript -->
-          </tbody>
-        </table>
-      </div>
-    </div>
+        <!-- Summary Cards -->
+        <div class="inventory-summary">
+            <div class="summary-card">
+                <h3>Total Units</h3>
+                <p id="totalUnits">--</p>
+            </div>
+            <div class="summary-card">
+                <h3>Blood Types</h3>
+                <p>8 Types</p>
+            </div>
+            <div class="summary-card">
+                <h3>Low Stock Types</h3>
+                <p id="lowStockCount">--</p>
+            </div>
+        </div>
 
-    <!-- Actions -->
-    
-      <div class="section">
-    <h2>Actions</h2>
-    <div class="action-buttons">
-        <button onclick="refreshData()" class="action-btn">🔄 Refresh Inventory</button>
-        <button onclick="window.location.href='index.html'" class="action-btn">📊 Back to Dashboard</button>
-        <!-- ADD THIS TEST BUTTON -->
-        <button onclick="testInventory()" class="action-btn" style="background:#ff6b6b;">🧪 Test Inventory</button>
-    </div>
-</div>
-    </div>
-  </main>
+        <!-- Inventory Table -->
+        <div class="section">
+            <h2>Blood Inventory Details</h2>
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Blood Group</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-  <script src="script.js"></script>
+        <!-- Actions - ONLY ONCE! -->
+        <div class="section">
+            <h2>Actions</h2>
+            <div class="action-buttons">
+                <button onclick="refreshData()" class="action-btn">🔄 Refresh Inventory</button>
+                <button onclick="window.location.href='index.html'" class="action-btn">📊 Back to Dashboard</button>
+                <!-- Keep this for testing during viva -->
+                <button onclick="testInventory()" class="action-btn" style="background:#ff6b6b;">🧪 Test Inventory</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
 </body>
 </html>
