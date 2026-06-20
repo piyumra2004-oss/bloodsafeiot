@@ -50,7 +50,7 @@ async function refreshData() {
             }
             
             // ONLY update inventory if we're on inventory page
-            if (document.getElementById('inventoryBody')) {
+            if (document.getElementById("inventoryBody")) {
                 console.log('📋 Updating inventory page...');
                 updateInventoryPage(data);
             }
