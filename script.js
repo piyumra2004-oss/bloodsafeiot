@@ -33,14 +33,14 @@ async function refreshData() {
         const data = await response.json();
         
         if (data.success) {
-            updateDashboard(data);
+            updateDashboard(data);  // ← Updates dashboard
             
-            // Check which page we're on and update accordingly
+            // ← NEW: Checks which page we're on
             if (document.getElementById('inventoryBody')) {
-                updateInventoryPage(data);
+                updateInventoryPage(data);  // ← Updates inventory
             }
             if (document.getElementById('alertList')) {
-                updateAlertsPage(data);
+                updateAlertsPage(data);  // ← Updates alerts
             }
         } else {
             console.error('API Error:', data.error);
@@ -49,7 +49,6 @@ async function refreshData() {
         console.error('Network Error:', error);
     }
 }
-
 // ---------- UPDATE DASHBOARD ----------
 function updateDashboard(data) {
     // Temperature
