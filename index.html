@@ -66,6 +66,42 @@
     </div>
   </main>
 
-  <script src="script.js"></script>
+  <script src="script.js">
+    const SUPABASE_URL = "https://jqdnxrmulgndvcotnfmu.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxZG54cm11bGduZHZjb3RuZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMTQ2MDIsImV4cCI6MjA5Nzg5MDYwMn0.PJRHVVdtK56rDKJxnQH-grwD0M8SaUrJZL9qUdhnSzg";
+
+async function fetchData() {
+  try {
+    const res = await fetch(
+      SUPABASE_URL + "/rest/v1/bloodbank?select=*&order=id.desc&limit=1",
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + SUPABASE_KEY
+        }
+      }
+    );
+    const data = await res.json();
+
+    if (data && data.length > 0) {
+      const temp = parseFloat(data[0].temperature) || 0;
+      const stock = parseInt(data[0].blood_stock) || 0;
+      updateDisplay(temp, stock);
+
+      const now = new Date();
+      document.getElementById("lastUpdated").textContent =
+        "Last updated: " + now.toLocaleTimeString();
+      document.getElementById("loadingBox").style.display = "none";
+      document.getElementById("mainContent").style.display = "block";
+    }
+  } catch (e) {
+    document.getElementById("loadingBox").innerHTML =
+      "<div style='color:#E53935;'>⚠️ Could not load data.<br><br><button onclick='fetchData()' style='background:#E53935;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;'>Try Again</button></div>";
+  }
+}
+
+fetchData();
+setInterval(fetchData, 5000);
+  </script>
 </body>
 </html>
