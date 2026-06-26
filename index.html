@@ -67,8 +67,8 @@
   </main>
 
   <script src="script.js">
-    const SUPABASE_URL = "https://jqdnxrmulgndvcotnfmu.supabase.co";
-const SUPABASE_KEY = "sb_publishable_zeKhPNaF8ApBtD2J6ktD1w_sS6k-QZH";
+   const SUPABASE_URL = "https://jqdnxrmulgndvcotnfmu.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxZG54cm11bGduZHZjb3RuZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMTQ2MDIsImV4cCI6MjA5Nzg5MDYwMn0.PJRHVVdtK56rDKJxnQH-grwD0M8SaUrJZL9qUdhnSzg";
 
 async function fetchData() {
   try {
@@ -98,6 +98,76 @@ async function fetchData() {
     document.getElementById("loadingBox").innerHTML =
       "<div style='color:#E53935;'>⚠️ Could not load data.<br><br><button onclick='fetchData()' style='background:#E53935;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;'>Try Again</button></div>";
   }
+}
+
+function updateDisplay(temp, stock) {
+  const tempValEl = document.getElementById("tempValue");
+  const tempStatusEl = document.getElementById("tempStatus");
+  const tempCard = document.getElementById("tempCard");
+  tempValEl.textContent = temp.toFixed(1) + "°C";
+
+  if (temp > 8) {
+    setCard(tempCard, tempValEl, tempStatusEl, "red", "🔴 CRITICAL - TOO HIGH");
+  } else if (temp < 2) {
+    setCard(tempCard, tempValEl, tempStatusEl, "yellow", "🟡 WARNING - TOO LOW");
+  } else {
+    setCard(tempCard, tempValEl, tempStatusEl, "green", "🟢 NORMAL");
+  }
+
+  const stockValEl = document.getElementById("stockValue");
+  const stockStatusEl = document.getElementById("stockStatus");
+  const stockCard = document.getElementById("stockCard");
+  stockValEl.textContent = stock + " Units";
+
+  if (stock < 15) {
+    setCard(stockCard, stockValEl, stockStatusEl, "red", "🔴 CRITICALLY LOW");
+  } else if (stock < 30) {
+    setCard(stockCard, stockValEl, stockStatusEl, "yellow", "🟡 STOCK LOW");
+  } else {
+    setCard(stockCard, stockValEl, stockStatusEl, "green", "🟢 SUFFICIENT");
+  }
+
+  const banner = document.getElementById("alertBanner");
+  banner.className = "alert-banner show";
+
+  if (temp > 8) {
+    banner.classList.add("critical");
+    document.getElementById("alertIcon").textContent = "🚨";
+    document.getElementById("alertTitle").textContent = "CRITICAL TEMPERATURE ALERT";
+    document.getElementById("alertDesc").textContent =
+      "Temperature " + temp.toFixed(1) + "°C exceeds safe limit! Check storage immediately.";
+  } else if (stock < 30) {
+    banner.classList.add("warning");
+    document.getElementById("alertIcon").textContent = "⚠️";
+    document.getElementById("alertTitle").textContent = "LOW BLOOD STOCK WARNING";
+    document.getElementById("alertDesc").textContent =
+      "Only " + stock + " units remaining. Restock required soon.";
+  } else {
+    banner.classList.add("normal");
+    document.getElementById("alertIcon").textContent = "✅";
+    document.getElementById("alertTitle").textContent = "ALL SYSTEMS NORMAL";
+    document.getElementById("alertDesc").textContent =
+      "Temperature and blood stock are within safe limits.";
+  }
+
+  const overall = document.getElementById("overallStatus");
+  if (temp > 8) {
+    overall.textContent = "🔴 CRITICAL ALERT";
+    overall.style.color = "#E53935";
+  } else if (stock < 30) {
+    overall.textContent = "🟡 WARNING";
+    overall.style.color = "#FFC107";
+  } else {
+    overall.textContent = "🟢 ALL NORMAL";
+    overall.style.color = "#4CAF50";
+  }
+}
+
+function setCard(card, valEl, statusEl, color, text) {
+  card.className = "card " + color;
+  valEl.className = "card-value " + color;
+  statusEl.className = "card-status " + color;
+  statusEl.textContent = text;
 }
 
 fetchData();
