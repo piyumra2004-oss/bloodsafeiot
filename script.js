@@ -1,5 +1,5 @@
 // ============================================================
-// BLOODSAFE IoT - COMPLETE SCRIPT
+// BLOODSAFE IoT - COMPLETE SCRIPT (FIXED)
 // ============================================================
 
 let updateInterval = null;
@@ -301,27 +301,52 @@ function updateBloodGrid(inventory) {
 }
 
 // ============================================================
-// INVENTORY PAGE
+// INVENTORY PAGE - FIXED LOW STOCK COUNT
 // ============================================================
 function updateInventoryPage(data) {
     console.log('📋 Updating inventory page...');
+    console.log('📊 Data for inventory:', data);
     
+    // Total units
     const totalUnits = document.getElementById('totalUnits');
-    if (totalUnits) totalUnits.textContent = data.stock || 0;
+    if (totalUnits) {
+        totalUnits.textContent = data.stock || 0;
+    }
+    
+    // ============================================================
+    // 🔥 FIXED: Count LOW + CRITICAL blood types
+    // ============================================================
+    const inventory = calculateInventory(data.stock || 0);
+    
+    let lowCount = 0;
+    let criticalCount = 0;
+    
+    for (const [group, info] of Object.entries(inventory)) {
+        if (info.status === 'LOW') lowCount++;
+        if (info.status === 'CRITICAL') criticalCount++;
+    }
+    
+    // Also check expiry warning
+    let expiryWarning = 0;
+    if (data.expiry > 10) expiryWarning = 1;
+    
+    const totalIssues = lowCount + criticalCount + expiryWarning;
     
     const lowStockCount = document.getElementById('lowStockCount');
     if (lowStockCount) {
-        let count = 0;
-        if (data.stock < 30) count++;
-        if (data.stock < 15) count++;
-        if (data.expiry > 10) count++;
-        lowStockCount.textContent = count;
+        lowStockCount.textContent = totalIssues;
+        console.log('✅ Low stock count:', totalIssues);
+        console.log('   - LOW:', lowCount);
+        console.log('   - CRITICAL:', criticalCount);
+        console.log('   - Expiry warning:', expiryWarning);
     }
     
+    // ============================================================
+    // INVENTORY TABLE
+    // ============================================================
     const tbody = document.getElementById('inventoryBody');
     if (!tbody) return;
     
-    const inventory = calculateInventory(data.stock || 0);
     tbody.innerHTML = '';
     
     for (const [group, info] of Object.entries(inventory)) {
@@ -334,6 +359,8 @@ function updateInventoryPage(data) {
         `;
         tbody.appendChild(row);
     }
+    
+    console.log('✅ Inventory updated with', Object.keys(inventory).length, 'blood types');
 }
 
 // ============================================================
