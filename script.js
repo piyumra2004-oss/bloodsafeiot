@@ -165,7 +165,37 @@ function updateDashboard(data) {
     if (lastUpdate) {
         lastUpdate.textContent = data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString() : '--';
     }
+    function updateDashboard(data) {
+    // ... existing code ...
     
+    // ============================================================
+    // 🔥 HUMIDITY - ADD THIS!
+    // ============================================================
+    const humidityDisplay = document.getElementById('humidityDisplay');
+    if (humidityDisplay) {
+        humidityDisplay.textContent = data.humidity || 0 + '%';
+    }
+    
+    const humidityStatus = document.getElementById('humidityStatus');
+    if (humidityStatus) {
+        const humidity = data.humidity || 0;
+        if (humidity > 80) {
+            humidityStatus.textContent = '🚨 HIGH';
+            humidityStatus.className = 'stat-status critical';
+        } else if (humidity > 60) {
+            humidityStatus.textContent = '⚠ WARNING';
+            humidityStatus.className = 'stat-status warning';
+        } else if (humidity < 30) {
+            humidityStatus.textContent = '⚠ LOW';
+            humidityStatus.className = 'stat-status warning';
+        } else {
+            humidityStatus.textContent = '✅ Normal';
+            humidityStatus.className = 'stat-status normal';
+        }
+    }
+    
+    // ... rest of code ...
+}
     // Alert Banner
     const banner = document.getElementById('alertBanner');
     if (banner) {
