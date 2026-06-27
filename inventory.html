@@ -8,23 +8,21 @@
 </head>
 <body>
 
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-brand">🩸 BloodSafe IoT</div>
         <div class="nav-links">
             <a href="index.html">Dashboard</a>
             <a href="inventory.html" class="active">Inventory</a>
             <a href="alerts.html">Alerts</a>
+            <a href="reports.html">Reports</a>
             <span id="userDisplay" class="user-badge">👤 Officer</span>
             <button onclick="logout()" class="logout-btn">Logout</button>
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main class="dashboard">
         <h1>📋 Blood Inventory Management</h1>
 
-        <!-- Summary Cards -->
         <div class="inventory-summary">
             <div class="summary-card">
                 <h3>Total Units</h3>
@@ -40,7 +38,6 @@
             </div>
         </div>
 
-        <!-- Inventory Table -->
         <div class="section">
             <h2>Blood Inventory Details</h2>
             <div class="inventory-table-container">
@@ -59,18 +56,17 @@
             </div>
         </div>
 
-        <!-- Actions - ONLY ONCE! -->
         <div class="section">
             <h2>Actions</h2>
             <div class="action-buttons">
                 <button onclick="refreshData()" class="action-btn">🔄 Refresh Inventory</button>
                 <button onclick="window.location.href='index.html'" class="action-btn">📊 Back to Dashboard</button>
-                <!-- Keep this for testing during viva -->
-                <button onclick="testInventory()" class="action-btn" style="background:#ff6b6b;">🧪 Test Inventory</button>
             </div>
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
