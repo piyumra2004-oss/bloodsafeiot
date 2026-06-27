@@ -23,6 +23,7 @@
 
     <!-- Main Content -->
     <main class="dashboard">
+
         <!-- Alert Banner -->
         <div id="alertBanner" class="alert-banner normal">
             ✅ ALL SYSTEMS NORMAL - Blood Bank Operating Safely
@@ -30,24 +31,47 @@
 
         <!-- Stats Grid -->
         <div class="stats-grid">
+            <!-- Temperature -->
             <div class="stat-card temp-card">
                 <div class="stat-icon">🌡️</div>
                 <div class="stat-label">Temperature</div>
                 <div class="stat-value" id="tempDisplay">--°C</div>
                 <div class="stat-status" id="tempStatus">Loading...</div>
             </div>
+
+            <!-- Humidity -->
+            <div class="stat-card humidity-card">
+                <div class="stat-icon">💧</div>
+                <div class="stat-label">Humidity</div>
+                <div class="stat-value" id="humidityDisplay">--%</div>
+                <div class="stat-status" id="humidityStatus">Loading...</div>
+            </div>
+
+            <!-- Stock -->
             <div class="stat-card stock-card">
                 <div class="stat-icon">📦</div>
                 <div class="stat-label">Total Stock</div>
                 <div class="stat-value" id="stockDisplay">--</div>
                 <div class="stat-status" id="stockStatus">Loading...</div>
             </div>
+
+            <!-- Expiry -->
             <div class="stat-card expiry-card">
                 <div class="stat-icon">⏰</div>
                 <div class="stat-label">Near Expiry</div>
                 <div class="stat-value" id="expiryDisplay">--</div>
                 <div class="stat-status" id="expiryStatus">Loading...</div>
             </div>
+
+            <!-- Door Status -->
+            <div class="stat-card door-card">
+                <div class="stat-icon">🚪</div>
+                <div class="stat-label">Door Status</div>
+                <div class="stat-value" id="doorDisplay">--</div>
+                <div class="stat-status" id="doorStatus">Loading...</div>
+            </div>
+
+            <!-- System Status -->
             <div class="stat-card status-card">
                 <div class="stat-icon">📊</div>
                 <div class="stat-label">System Status</div>
@@ -55,12 +79,7 @@
                 <div class="stat-status">Last Update: <span id="lastUpdate">--</span></div>
             </div>
         </div>
-<div class="stat-card">
-    <div class="stat-icon">💧</div>
-    <div class="stat-label">Humidity</div>
-    <div class="stat-value" id="humidityDisplay">--%</div>
-    <div class="stat-status" id="humidityStatus">Loading...</div>
-</div>
+
         <!-- Blood Inventory -->
         <div class="section">
             <h2>Blood Inventory Overview</h2>
@@ -78,15 +97,13 @@
                 <button onclick="refreshData()" class="action-btn">🔄 Refresh</button>
             </div>
         </div>
+
     </main>
-<!-- Supabase SDK FIRST -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Supabase Config SECOND -->
-<script src="supabase-config.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
 
-<!-- Dashboard Script THIRD -->
-<script src="script.js"></script>
- 
 </body>
 </html>
