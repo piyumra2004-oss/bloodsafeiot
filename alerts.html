@@ -1,53 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BloodSafe IoT - Alerts</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BloodSafe IoT - Alerts</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="nav-brand">🩸 BloodSafe IoT</div>
-    <div class="nav-links">
-      <a href="index.html">Dashboard</a>
-      <a href="inventory.html">Inventory</a>
-      <a href="alerts.html" class="active">Alerts</a>
-      <span id="userDisplay" class="user-badge">👤 Officer</span>
-      <button onclick="logout()" class="logout-btn">Logout</button>
-    </div>
-  </nav>
+    <nav class="navbar">
+        <div class="nav-brand">🩸 BloodSafe IoT</div>
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="alerts.html" class="active">Alerts</a>
+            <a href="reports.html">Reports</a>
+            <span id="userDisplay" class="user-badge">👤 Officer</span>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+    </nav>
 
-  <!-- Main Content -->
-  <main class="dashboard">
-    <h1>🔔 Alert History</h1>
-    
-    <!-- Alert Filters -->
-    <div class="alert-filters">
-      <button onclick="filterAlerts('ALL')" class="filter-btn active">All</button>
-      <button onclick="filterAlerts('CRITICAL')" class="filter-btn">Critical</button>
-      <button onclick="filterAlerts('WARNING')" class="filter-btn">Warnings</button>
-      <button onclick="filterAlerts('INFO')" class="filter-btn">Information</button>
-    </div>
+    <main class="dashboard">
+        <h1>🔔 Alert History</h1>
 
-    <!-- Alert List -->
-    <div class="section">
-      <div class="alert-list" id="alertList">
-        <p style="text-align:center; padding:20px; color:#888;">No alerts to display</p>
-      </div>
-    </div>
+        <div class="alert-filters">
+            <button onclick="filterAlerts('ALL')" class="filter-btn active">All</button>
+            <button onclick="filterAlerts('CRITICAL')" class="filter-btn">Critical</button>
+            <button onclick="filterAlerts('WARNING')" class="filter-btn">Warnings</button>
+            <button onclick="filterAlerts('INFO')" class="filter-btn">Information</button>
+        </div>
 
-    <!-- Actions -->
-    <div class="section">
-      <div class="action-buttons">
-        <button onclick="refreshData()" class="action-btn">🔄 Refresh Alerts</button>
-        <button onclick="window.location.href='index.html'" class="action-btn">📊 Back to Dashboard</button>
-      </div>
-    </div>
-  </main>
+        <div class="section">
+            <div class="alert-list" id="alertList">
+                <p style="text-align:center; padding:20px; color:#888;">Loading alerts...</p>
+            </div>
+        </div>
 
-  <script src="script.js"></script>
+        <div class="section">
+            <div class="action-buttons">
+                <button onclick="refreshData()" class="action-btn">🔄 Refresh Alerts</button>
+                <button onclick="window.location.href='index.html'" class="action-btn">📊 Back to Dashboard</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
