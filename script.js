@@ -1,5 +1,5 @@
 // ============================================================
-// BLOODSAFE IoT - FIXED VERSION
+// BLOODSAFE IoT - COMPLETE FIXED SCRIPT
 // ============================================================
 
 let updateInterval = null;
@@ -10,7 +10,6 @@ let updateInterval = null;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔄 Page loaded');
     
-    // Check login
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
         window.location.href = 'login.html';
@@ -18,15 +17,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     const userDisplay = document.getElementById('userDisplay');
-    if (userDisplay) {
-        userDisplay.textContent = '👤 ' + user.username;
-    }
+    if (userDisplay) userDisplay.textContent = '👤 ' + user.username;
     console.log('👤 User:', user.username);
     
-    // Load data
     refreshData();
-    
-    // Auto-refresh every 5 seconds
     updateInterval = setInterval(refreshData, 5000);
 });
 
@@ -63,7 +57,6 @@ async function refreshData() {
                 lastUpdated: latest.updated_at || new Date().toISOString()
             };
             
-            // UPDATE ONLY THE PAGE WE'RE ON
             updateCurrentPage(dashboardData);
         }
         
@@ -73,24 +66,17 @@ async function refreshData() {
 }
 
 // ============================================================
-// UPDATE ONLY THE CURRENT PAGE
+// UPDATE CURRENT PAGE
 // ============================================================
 function updateCurrentPage(data) {
-    // Check which page we're on by looking for unique elements
-    
-    // DASHBOARD PAGE - has tempDisplay
     if (document.getElementById('tempDisplay')) {
         console.log('🖥️ Updating dashboard...');
         updateDashboard(data);
     }
-    
-    // INVENTORY PAGE - has inventoryBody
     if (document.getElementById('inventoryBody')) {
         console.log('📋 Updating inventory page...');
         updateInventoryPage(data);
     }
-    
-    // ALERTS PAGE - has alertList
     if (document.getElementById('alertList')) {
         console.log('🔔 Updating alerts page...');
         updateAlertsPage(data);
@@ -98,9 +84,11 @@ function updateCurrentPage(data) {
 }
 
 // ============================================================
-// UPDATE DASHBOARD
+// UPDATE DASHBOARD - COMPLETE
 // ============================================================
 function updateDashboard(data) {
+    console.log('🖥️ Updating dashboard...');
+    
     // Temperature
     const tempDisplay = document.getElementById('tempDisplay');
     if (tempDisplay) tempDisplay.textContent = data.temperature + '°C';
@@ -137,9 +125,33 @@ function updateDashboard(data) {
         }
     }
     
-    // Expiry
+    // ============================================================
+    // 🔥 EXPIRY - FIXED!
+    // ============================================================
     const expiryDisplay = document.getElementById('expiryDisplay');
-    if (expiryDisplay) expiryDisplay.textContent = data.expiry;
+    if (expiryDisplay) {
+        expiryDisplay.textContent = data.expiry || 0;
+        console.log('📅 Expiry displayed:', data.expiry);
+    }
+    
+    const expiryStatus = document.getElementById('expiryStatus');
+    if (expiryStatus) {
+        const expiry = data.expiry || 0;
+        if (expiry > 15) {
+            expiryStatus.textContent = '🚨 CRITICAL';
+            expiryStatus.className = 'stat-status critical';
+        } else if (expiry > 8) {
+            expiryStatus.textContent = '⚠ WARNING';
+            expiryStatus.className = 'stat-status warning';
+        } else if (expiry > 0) {
+            expiryStatus.textContent = '⏰ Review Soon';
+            expiryStatus.className = 'stat-status warning';
+        } else {
+            expiryStatus.textContent = '✅ No Issues';
+            expiryStatus.className = 'stat-status normal';
+        }
+        console.log('📅 Expiry status:', expiryStatus.textContent);
+    }
     
     // System Status
     const systemStatus = document.getElementById('systemStatus');
@@ -159,13 +171,13 @@ function updateDashboard(data) {
     if (banner) {
         if (data.status === 'CRITICAL' || data.temperature > 8) {
             banner.className = 'alert-banner critical';
-            banner.textContent = '🚨 CRITICAL: Temperature ' + data.temperature + '°C - Immediate Action!';
+            banner.textContent = '🚨 CRITICAL: Temperature ' + data.temperature + '°C';
         } else if (data.status === 'WARNING' || data.stock < 30) {
             banner.className = 'alert-banner warning';
             banner.textContent = '⚠ WARNING: Low Stock (' + data.stock + ' units)';
         } else {
             banner.className = 'alert-banner normal';
-            banner.textContent = '✅ ALL SYSTEMS NORMAL - Blood Bank Operating Safely';
+            banner.textContent = '✅ ALL SYSTEMS NORMAL';
         }
     }
     
@@ -228,15 +240,14 @@ function updateInventoryPage(data) {
     console.log('📋 Updating inventory page...');
     
     const totalUnits = document.getElementById('totalUnits');
-    if (totalUnits) {
-        totalUnits.textContent = data.stock || 0;
-    }
+    if (totalUnits) totalUnits.textContent = data.stock || 0;
     
     const lowStockCount = document.getElementById('lowStockCount');
     if (lowStockCount) {
         let count = 0;
         if (data.stock < 30) count++;
         if (data.stock < 15) count++;
+        if (data.expiry > 10) count++;
         lowStockCount.textContent = count;
     }
     
@@ -256,8 +267,7 @@ function updateInventoryPage(data) {
         `;
         tbody.appendChild(row);
     }
-    
-    console.log('✅ Inventory updated with', Object.keys(inventory).length, 'blood types');
+    console.log('✅ Inventory updated');
 }
 
 // ============================================================
@@ -271,10 +281,10 @@ function updateAlertsPage(data) {
     const alerts = [];
     
     if (data.status === 'CRITICAL' || data.temperature > 8) {
-        alerts.push({ type: 'CRITICAL', message: 'Temperature Alert: ' + data.temperature + '°C', time: time });
+        alerts.push({ type: 'CRITICAL', message: 'Temperature: ' + data.temperature + '°C', time: time });
     }
     if (data.stock < 15) {
-        alerts.push({ type: 'CRITICAL', message: 'Stock Critically Low: ' + data.stock + ' units', time: time });
+        alerts.push({ type: 'CRITICAL', message: 'Stock: ' + data.stock + ' units', time: time });
     }
     if (data.stock < 30 && data.stock >= 15) {
         alerts.push({ type: 'WARNING', message: 'Stock Low: ' + data.stock + ' units', time: time });
