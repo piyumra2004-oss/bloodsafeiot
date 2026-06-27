@@ -34,14 +34,14 @@ async function refreshData() {
     try {
         console.log('📡 Fetching data from Supabase...');
         
-        // Check if supabase is defined
-        if (typeof supabase === 'undefined') {
-            console.error('❌ Supabase is not defined! Check supabase-config.js');
+        // Check if sb is defined (from supabase-config.js)
+        if (typeof sb === 'undefined') {
+            console.error('❌ Supabase client not defined! Check supabase-config.js');
             return;
         }
         
-        // Fetch latest data from sensors table
-        const { data, error } = await supabase
+        // Fetch latest data from sensors table using 'sb'
+        const { data, error } = await sb
             .from('sensors')
             .select('*')
             .order('id', { ascending: false })
@@ -295,7 +295,7 @@ function filterAlerts(filter) {
 // ============================================================
 async function updateStock(change) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('sensors')
             .select('blood_stock')
             .order('id', { ascending: false })
@@ -306,7 +306,7 @@ async function updateStock(change) {
         const currentStock = data && data.length > 0 ? data[0].blood_stock : 85;
         const newStock = Math.max(0, Math.min(150, currentStock + change));
         
-        await supabase
+        await sb
             .from('sensors')
             .update({ blood_stock: newStock })
             .eq('id', 1);
