@@ -1,29 +1,24 @@
 // ============================================================
-// BLOODSAFE IoT - SUPABASE VERSION
+// BLOODSAFE IoT - Dashboard Script
 // ============================================================
 
 let updateInterval = null;
-let currentUser = null;
 
 // ============================================================
 // PAGE LOAD
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔄 Page loaded');
+    
     // Check login
-    currentUser = JSON.parse(localStorage.getItem('user'));
-    if (!currentUser) {
+    var user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
         window.location.href = 'login.html';
         return;
     }
     
-    document.getElementById('userDisplay').textContent = '👤 ' + currentUser.username;
-    
-    // Check role
-    if (currentUser.role === 'MANAGER') {
-        document.querySelectorAll('.manager-only').forEach(el => {
-            el.style.display = 'inline-block';
-        });
-    }
+    document.getElementById('userDisplay').textContent = '👤 ' + user.username;
+    console.log('👤 User:', user.username);
     
     // Load data
     refreshData();
@@ -38,9 +33,16 @@ document.addEventListener('DOMContentLoaded', function() {
 async function refreshData() {
     try {
         console.log('📡 Reading from Supabase...');
+        console.log('🔑 Using URL:', SUPABASE_URL);
         
-        // Read from sensors table
-        const { data, error } = await supabase
+        // Check if supabaseClient exists
+        if (typeof supabaseClient === 'undefined') {
+            console.error('❌ supabaseClient is not defined!');
+            return;
+        }
+        
+        // Read from sensors table using supabaseClient
+        const { data, error } = await supabaseClient
             .from('sensors')
             .select('*')
             .order('id', { ascending: false })
@@ -51,11 +53,12 @@ async function refreshData() {
             return;
         }
         
+        console.log('📊 Data from Supabase:', data);
+        
         if (data && data.length > 0) {
             const latest = data[0];
-            console.log('📊 Data:', latest);
+            console.log('✅ Latest data:', latest);
             
-            // Map data
             const dashboardData = {
                 temperature: latest.temperature || 0,
                 stock: latest.blood_stock || 0,
@@ -73,10 +76,12 @@ async function refreshData() {
             if (document.getElementById('alertList')) {
                 updateAlertsPage(dashboardData);
             }
+        } else {
+            console.warn('⚠️ No data found in sensors table!');
         }
         
     } catch (error) {
-        console.error('❌ Network Error:', error);
+        console.error('❌ Error:', error);
     }
 }
 
@@ -84,9 +89,12 @@ async function refreshData() {
 // UPDATE DASHBOARD
 // ============================================================
 function updateDashboard(data) {
+    console.log('🖥️ Updating dashboard...');
+    
     // Temperature
     const temp = data.temperature;
     document.getElementById('tempDisplay').textContent = temp + '°C';
+    
     const tempStatus = document.getElementById('tempStatus');
     if (temp > 8) {
         tempStatus.textContent = '🚨 CRITICAL';
@@ -102,6 +110,7 @@ function updateDashboard(data) {
     // Stock
     const stock = data.stock;
     document.getElementById('stockDisplay').textContent = stock;
+    
     const stockStatus = document.getElementById('stockStatus');
     if (stock < 15) {
         stockStatus.textContent = '🚨 CRITICAL';
@@ -127,13 +136,15 @@ function updateDashboard(data) {
         data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString() : '--';
     
     // Alert Banner
-    updateAlertBanner(status, data.temperature, data.stock, data.door);
+    updateAlertBanner(data.status, data.temperature, data.stock, data.door);
     
     // Inventory Grid
     if (data.stock > 0) {
         const inventory = calculateInventory(data.stock);
         updateBloodGrid(inventory);
     }
+    
+    console.log('✅ Dashboard updated!');
 }
 
 // ============================================================
@@ -259,36 +270,40 @@ function updateAlertsPage(data) {
     const alerts = [];
     
     if (status === 'CRITICAL' || temp > 8) {
-        alerts.push({ type: 'CRITICAL', message: 'Temperature Alert: ' + temp + '°C - Immediate action required!', time: time });
+        alerts.push({ type: 'CRITICAL', message: 'Temperature: ' + temp + '°C - Immediate action!', time: time });
     }
     if (stock < 15) {
-        alerts.push({ type: 'CRITICAL', message: 'Low Stock Alert: ' + stock + ' units remaining', time: time });
+        alerts.push({ type: 'CRITICAL', message: 'Stock critically low: ' + stock + ' units', time: time });
     }
     if (stock < 30 && stock >= 15) {
-        alerts.push({ type: 'WARNING', message: 'Stock Warning: ' + stock + ' units', time: time });
+        alerts.push({ type: 'WARNING', message: 'Stock low: ' + stock + ' units', time: time });
     }
     if (door === 'Open') {
-        alerts.push({ type: 'WARNING', message: 'Door Open Alert: Refrigerator door is open', time: time });
+        alerts.push({ type: 'WARNING', message: 'Door is open!', time: time });
     }
     if (data.expiry > 10) {
-        alerts.push({ type: 'WARNING', message: 'Expiry Warning: ' + data.expiry + ' bags near expiry', time: time });
+        alerts.push({ type: 'WARNING', message: data.expiry + ' bags near expiry', time: time });
     }
     if (status === 'NORMAL' && temp <= 6 && stock >= 30) {
         alerts.push({ type: 'INFO', message: 'System running normally', time: time });
     }
     
     alertList.innerHTML = '';
-    alerts.forEach(alert => {
-        const item = document.createElement('div');
-item.className = 'alert-item';
-        item.dataset.type = alert.type;
-        item.innerHTML = `
-            <span class="alert-type ${alert.type}">${alert.type}</span>
-            <span class="alert-message">${alert.message}</span>
-            <span class="alert-time">${alert.time}</span>
-        `;
-        alertList.appendChild(item);
-    });
+    if (alerts.length === 0) {
+        alertList.innerHTML = '<p style="text-align:center; padding:20px; color:#888;">No alerts to display</p>';
+    } else {
+        alerts.forEach(alert => {
+            const item = document.createElement('div');
+            item.className = 'alert-item';
+            item.dataset.type = alert.type;
+            item.innerHTML = `
+                <span class="alert-type ${alert.type}">${alert.type}</span>
+                <span class="alert-message">${alert.message}</span>
+                <span class="alert-time">${alert.time}</span>
+            `;
+            alertList.appendChild(item);
+        });
+    }
 }
 
 function filterAlerts(filter) {
@@ -307,7 +322,7 @@ function filterAlerts(filter) {
 // ============================================================
 async function updateStock(change) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('sensors')
             .select('blood_stock')
             .order('id', { ascending: false })
@@ -318,7 +333,7 @@ async function updateStock(change) {
         const currentStock = data && data.length > 0 ? data[0].blood_stock : 85;
         const newStock = Math.max(0, Math.min(150, currentStock + change));
         
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseClient
             .from('sensors')
             .update({ blood_stock: newStock })
             .eq('id', 1);
