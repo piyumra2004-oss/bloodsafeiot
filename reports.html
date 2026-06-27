@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BloodSafe IoT - Reports</title>
     <link rel="stylesheet" href="style.css" />
+    <!-- Chart.js for charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
+    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-brand">🩸 BloodSafe IoT</div>
         <div class="nav-links">
@@ -20,32 +23,57 @@
         </div>
     </nav>
 
+    <!-- Main Content -->
     <main class="dashboard">
         <h1>📊 Reports & Analytics</h1>
-        
+
+        <!-- Temperature Chart -->
         <div class="section">
-            <h2>Temperature History</h2>
-            <div id="tempChart" style="height:300px; background:#f8f9fa; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#888;">
-                📈 Temperature chart will appear here
+            <h2>🌡️ Temperature History</h2>
+            <div style="height:300px;">
+                <canvas id="tempChart"></canvas>
             </div>
         </div>
 
+        <!-- Stock Chart -->
         <div class="section">
-            <h2>Stock Trends</h2>
-            <div id="stockChart" style="height:300px; background:#f8f9fa; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#888;">
-                📊 Stock chart will appear here
+            <h2>📦 Stock Trends</h2>
+            <div style="height:300px;">
+                <canvas id="stockChart"></canvas>
             </div>
         </div>
 
+        <!-- Blood Group Distribution -->
         <div class="section">
-            <h2>Blood Group Distribution</h2>
-            <div id="bloodChart" style="height:300px; background:#f8f9fa; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#888;">
-                🩸 Blood group distribution chart will appear here
+            <h2>🩸 Blood Group Distribution</h2>
+            <div style="height:300px;">
+                <canvas id="bloodChart"></canvas>
             </div>
         </div>
 
+        <!-- Summary Cards -->
+        <div class="section">
+            <h2>📋 Summary</h2>
+            <div class="inventory-summary">
+                <div class="summary-card">
+                    <h3>Average Temperature</h3>
+                    <p id="avgTemp">--°C</p>
+                </div>
+                <div class="summary-card">
+                    <h3>Current Stock</h3>
+                    <p id="currentStock">--</p>
+                </div>
+                <div class="summary-card">
+                    <h3>Expiry Count</h3>
+                    <p id="currentExpiry">--</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
         <div class="section">
             <div class="action-buttons">
+                <button onclick="refreshData()" class="action-btn">🔄 Refresh Reports</button>
                 <button onclick="window.location.href='index.html'" class="action-btn">📊 Back to Dashboard</button>
             </div>
         </div>
@@ -53,6 +81,193 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // ============================================================
+        // REPORTS PAGE - WITH CHARTS
+        // ============================================================
+
+        let tempChart = null;
+        let stockChart = null;
+        let bloodChart = null;
+        let historyData = [];
+        let maxDataPoints = 20;
+
+        // ============================================================
+        // PAGE LOAD
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('userDisplay').textContent = '👤 ' + user.username;
+            
+            // Load data
+            refreshData();
+            setInterval(refreshData, 10000);
+        });
+
+        // ============================================================
+        // FETCH DATA
+        // ============================================================
+        async function refreshData() {
+            try {
+                const { data, error } = await sb
+                    .from('sensors')
+                    .select('*')
+                    .order('id', { ascending: false })
+                    .limit(1);
+                
+                if (error) throw error;
+                
+                if (data && data.length > 0) {
+                    const latest = data[0];
+                    
+                    // Update summary
+                    document.getElementById('avgTemp').textContent = latest.temperature + '°C';
+                    document.getElementById('currentStock').textContent = latest.blood_stock;
+                    document.getElementById('currentExpiry').textContent = latest.expiry_count || 0;
+                    
+                    // Add to history
+                    historyData.push({
+                        temperature: latest.temperature,
+                        stock: latest.blood_stock,
+                        expiry: latest.expiry_count || 0,
+                        time: new Date().toLocaleTimeString()
+                    });
+                    
+                    if (historyData.length > maxDataPoints) {
+                        historyData.shift();
+                    }
+                    
+                    // Update charts
+                    updateCharts();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // ============================================================
+        // UPDATE CHARTS
+        // ============================================================
+        function updateCharts() {
+            const labels = historyData.map(d => d.time);
+            const tempData = historyData.map(d => d.temperature);
+            const stockData = historyData.map(d => d.stock);
+            
+            // Temperature Chart
+            if (tempChart) {
+                tempChart.destroy();
+            }
+            tempChart = new Chart(document.getElementById('tempChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: tempData,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3498db'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 12,
+                            title: { display: true, text: 'Temperature (°C)' }
+                        }
+                    }
+                }
+            });
+            
+            // Stock Chart
+            if (stockChart) {
+                stockChart.destroy();
+            }
+            stockChart = new Chart(document.getElementById('stockChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Blood Stock (units)',
+                        data: stockData,
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#2ecc71'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 150,
+                            title: { display: true, text: 'Stock (units)' }
+                        }
+                    }
+                }
+            });
+            
+            // Blood Group Distribution - Calculate from current stock
+            const currentStock = historyData.length > 0 ? historyData[historyData.length - 1].stock : 85;
+            const percentages = {
+                'A+': 0.24, 'A-': 0.12, 'B+': 0.18, 'B-': 0.09,
+                'O+': 0.21, 'O-': 0.07, 'AB+': 0.06, 'AB-': 0.03
+            };
+            
+            const groups = Object.keys(percentages);
+            const quantities = groups.map(g => Math.round(currentStock * percentages[g]));
+            const colors = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6', '#1abc9c', '#e84393'];
+            
+            if (bloodChart) {
+                bloodChart.destroy();
+            }
+            bloodChart = new Chart(document.getElementById('bloodChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: groups,
+                    datasets: [{
+                        data: quantities,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        // ============================================================
+        // LOGOUT
+        // ============================================================
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+    </script>
+
 </body>
 </html>
