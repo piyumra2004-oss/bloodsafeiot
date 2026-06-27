@@ -280,4 +280,64 @@ function updateAlertsPage(data) {
     alertList.innerHTML = '';
     alerts.forEach(alert => {
         const item = document.createElement('div');
-        item.className
+item.className = 'alert-item';
+        item.dataset.type = alert.type;
+        item.innerHTML = `
+            <span class="alert-type ${alert.type}">${alert.type}</span>
+            <span class="alert-message">${alert.message}</span>
+            <span class="alert-time">${alert.time}</span>
+        `;
+        alertList.appendChild(item);
+    });
+}
+
+function filterAlerts(filter) {
+    const items = document.querySelectorAll('.alert-item');
+    items.forEach(item => {
+        if (filter === 'ALL') {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = item.dataset.type === filter ? 'flex' : 'none';
+        }
+    });
+}
+
+// ============================================================
+// STOCK MANAGEMENT
+// ============================================================
+async function updateStock(change) {
+    try {
+        const { data, error } = await supabase
+            .from('sensors')
+            .select('blood_stock')
+            .order('id', { ascending: false })
+            .limit(1);
+        
+        if (error) throw error;
+        
+        const currentStock = data && data.length > 0 ? data[0].blood_stock : 85;
+        const newStock = Math.max(0, Math.min(150, currentStock + change));
+        
+        const { error: updateError } = await supabase
+            .from('sensors')
+            .update({ blood_stock: newStock })
+            .eq('id', 1);
+        
+        if (updateError) throw updateError;
+        
+        console.log('✅ Stock updated to:', newStock);
+        refreshData();
+        
+    } catch (error) {
+        console.error('❌ Error updating stock:', error);
+    }
+}
+
+// ============================================================
+// LOGOUT
+// ============================================================
+function logout() {
+    localStorage.removeItem('user');
+    clearInterval(updateInterval);
+    window.location.href = 'login.html';
+}
