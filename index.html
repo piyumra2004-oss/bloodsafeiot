@@ -1,72 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BloodSafe IoT - Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BloodSafe IoT - Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <nav class="navbar">
-    <div class="nav-brand">🩸 BloodSafe IoT</div>
-    <div class="nav-links">
-      <a href="index.html" class="active">Dashboard</a>
-      <a href="inventory.html">Inventory</a>
-      <a href="alerts.html">Alerts</a>
-      <span id="userDisplay" class="user-badge">👤 Officer</span>
-      <button onclick="logout()" class="logout-btn">Logout</button>
-    </div>
-  </nav>
 
-  <main class="dashboard">
-    <div id="alertBanner" class="alert-banner normal">
-      ✅ ALL SYSTEMS NORMAL
-    </div>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">🩸 BloodSafe IoT</div>
+        <div class="nav-links">
+            <a href="index.html" class="active">Dashboard</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="alerts.html">Alerts</a>
+            <a href="reports.html">Reports</a>
+            <span id="userDisplay" class="user-badge">👤 Officer</span>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+    </nav>
 
-    <div class="stats-grid">
-      <div class="stat-card temp-card">
-        <div class="stat-icon">🌡️</div>
-        <div class="stat-label">Temperature</div>
-        <div class="stat-value" id="tempDisplay">--°C</div>
-        <div class="stat-status" id="tempStatus">Loading...</div>
-      </div>
-      <div class="stat-card stock-card">
-        <div class="stat-icon">📦</div>
-        <div class="stat-label">Total Stock</div>
-        <div class="stat-value" id="stockDisplay">--</div>
-        <div class="stat-status" id="stockStatus">Loading...</div>
-      </div>
-      <div class="stat-card expiry-card">
-        <div class="stat-icon">⏰</div>
-        <div class="stat-label">Near Expiry</div>
-        <div class="stat-value" id="expiryDisplay">--</div>
-        <div class="stat-status" id="expiryStatus">Loading...</div>
-      </div>
-      <div class="stat-card status-card">
-        <div class="stat-icon">📊</div>
-        <div class="stat-label">System Status</div>
-        <div class="stat-value" id="systemStatus">--</div>
-        <div class="stat-status">Last Update: <span id="lastUpdate">--</span></div>
-      </div>
-    </div>
+    <!-- Main Content -->
+    <main class="dashboard">
+        <!-- Alert Banner -->
+        <div id="alertBanner" class="alert-banner normal">
+            ✅ ALL SYSTEMS NORMAL - Blood Bank Operating Safely
+        </div>
 
-    <div class="section">
-      <h2>Blood Inventory Overview</h2>
-      <div class="blood-grid" id="bloodGrid"></div>
-    </div>
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card temp-card">
+                <div class="stat-icon">🌡️</div>
+                <div class="stat-label">Temperature</div>
+                <div class="stat-value" id="tempDisplay">--°C</div>
+                <div class="stat-status" id="tempStatus">Loading...</div>
+            </div>
+            <div class="stat-card stock-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-label">Total Stock</div>
+                <div class="stat-value" id="stockDisplay">--</div>
+                <div class="stat-status" id="stockStatus">Loading...</div>
+            </div>
+            <div class="stat-card expiry-card">
+                <div class="stat-icon">⏰</div>
+                <div class="stat-label">Near Expiry</div>
+                <div class="stat-value" id="expiryDisplay">--</div>
+                <div class="stat-status" id="expiryStatus">Loading...</div>
+            </div>
+            <div class="stat-card status-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-label">System Status</div>
+                <div class="stat-value" id="systemStatus">--</div>
+                <div class="stat-status">Last Update: <span id="lastUpdate">--</span></div>
+            </div>
+        </div>
 
-    <div class="section">
-      <h2>Quick Actions</h2>
-      <div class="action-buttons">
-        <button onclick="updateStock(10)" class="action-btn">📦 Use 10 Units</button>
-        <button onclick="updateStock(-5)" class="action-btn">📥 Restock 5 Units</button>
-        <button onclick="refreshData()" class="action-btn">🔄 Refresh</button>
-        <button onclick="simulateCritical()" class="action-btn danger">🚨 Critical Alert</button>
-      </div>
-    </div>
-  </main>
+        <!-- Blood Inventory -->
+        <div class="section">
+            <h2>Blood Inventory Overview</h2>
+            <div class="blood-grid" id="bloodGrid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
 
-  <script src="script.js">
-  </script>
+        <!-- Quick Actions -->
+        <div class="section">
+            <h2>Quick Actions</h2>
+            <div class="action-buttons">
+                <button onclick="updateStock(10)" class="action-btn">📦 Use 10 Units</button>
+                <button onclick="updateStock(-5)" class="action-btn">📥 Restock 5 Units</button>
+                <button onclick="refreshData()" class="action-btn">🔄 Refresh</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
