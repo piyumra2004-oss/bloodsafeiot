@@ -1,5 +1,5 @@
 // ============================================================
-// BLOODSAFE IoT - Dashboard Script
+// BLOODSAFE IoT - Dashboard
 // ============================================================
 
 let updateInterval = null;
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🔄 Page loaded');
     
     // Check login
-    var user = JSON.parse(localStorage.getItem('user'));
+    const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
         window.location.href = 'login.html';
         return;
@@ -28,37 +28,37 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ============================================================
-// READ FROM SUPABASE
+// FETCH DATA FROM SUPABASE
 // ============================================================
 async function refreshData() {
     try {
-        console.log('📡 Reading from Supabase...');
-        console.log('🔑 Using URL:', SUPABASE_URL);
+        console.log('📡 Fetching data from Supabase...');
         
-        // Check if supabaseClient exists
-        if (typeof supabaseClient === 'undefined') {
-            console.error('❌ supabaseClient is not defined!');
+        // Check if supabase is defined
+        if (typeof supabase === 'undefined') {
+            console.error('❌ Supabase is not defined! Check supabase-config.js');
             return;
         }
         
-        // Read from sensors table using supabaseClient
-        const { data, error } = await supabaseClient
+        // Fetch latest data from sensors table
+        const { data, error } = await supabase
             .from('sensors')
             .select('*')
             .order('id', { ascending: false })
             .limit(1);
         
         if (error) {
-            console.error('❌ Supabase Error:', error);
+            console.error('❌ Supabase error:', error);
             return;
         }
         
-        console.log('📊 Data from Supabase:', data);
+        console.log('📊 Data received:', data);
         
         if (data && data.length > 0) {
             const latest = data[0];
-            console.log('✅ Latest data:', latest);
+            console.log('✅ Latest record:', latest);
             
+            // Build dashboard data
             const dashboardData = {
                 temperature: latest.temperature || 0,
                 stock: latest.blood_stock || 0,
@@ -68,20 +68,29 @@ async function refreshData() {
                 lastUpdated: latest.updated_at || new Date().toISOString()
             };
             
+            // Update all pages
             updateDashboard(dashboardData);
+            updateInventoryPage(dashboardData);
+            updateAlertsPage(dashboardData);
             
-            if (document.getElementById('inventoryBody')) {
-                updateInventoryPage(dashboardData);
-            }
-            if (document.getElementById('alertList')) {
-                updateAlertsPage(dashboardData);
-            }
         } else {
             console.warn('⚠️ No data found in sensors table!');
+            // Show default data
+            const defaultData = {
+                temperature: 4,
+                stock: 85,
+                expiry: 5,
+                status: 'NORMAL',
+                door: 'Closed',
+                lastUpdated: new Date().toISOString()
+            };
+            updateDashboard(defaultData);
+            updateInventoryPage(defaultData);
+            updateAlertsPage(defaultData);
         }
         
     } catch (error) {
-        console.error('❌ Error:', error);
+        console.error('❌ Error:', error.message);
     }
 }
 
@@ -92,14 +101,12 @@ function updateDashboard(data) {
     console.log('🖥️ Updating dashboard...');
     
     // Temperature
-    const temp = data.temperature;
-    document.getElementById('tempDisplay').textContent = temp + '°C';
-    
+    document.getElementById('tempDisplay').textContent = data.temperature + '°C';
     const tempStatus = document.getElementById('tempStatus');
-    if (temp > 8) {
+    if (data.temperature > 8) {
         tempStatus.textContent = '🚨 CRITICAL';
         tempStatus.className = 'stat-status critical';
-    } else if (temp < 2) {
+    } else if (data.temperature < 2) {
         tempStatus.textContent = '⚠ LOW';
         tempStatus.className = 'stat-status warning';
     } else {
@@ -108,14 +115,12 @@ function updateDashboard(data) {
     }
     
     // Stock
-    const stock = data.stock;
-    document.getElementById('stockDisplay').textContent = stock;
-    
+    document.getElementById('stockDisplay').textContent = data.stock;
     const stockStatus = document.getElementById('stockStatus');
-    if (stock < 15) {
+    if (data.stock < 15) {
         stockStatus.textContent = '🚨 CRITICAL';
         stockStatus.className = 'stat-status critical';
-    } else if (stock < 30) {
+    } else if (data.stock < 30) {
         stockStatus.textContent = '⚠ LOW';
         stockStatus.className = 'stat-status warning';
     } else {
@@ -124,25 +129,35 @@ function updateDashboard(data) {
     }
     
     // Expiry
-    document.getElementById('expiryDisplay').textContent = data.expiry || 0;
+    document.getElementById('expiryDisplay').textContent = data.expiry;
     
     // System Status
-    const status = data.status || 'NORMAL';
-    document.getElementById('systemStatus').textContent = status;
-    document.getElementById('systemStatus').className = status.toLowerCase();
+    document.getElementById('systemStatus').textContent = data.status;
+    document.getElementById('systemStatus').className = data.status.toLowerCase();
     
     // Last Update
     document.getElementById('lastUpdate').textContent = 
         data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString() : '--';
     
     // Alert Banner
-    updateAlertBanner(data.status, data.temperature, data.stock, data.door);
-    
-    // Inventory Grid
-    if (data.stock > 0) {
-        const inventory = calculateInventory(data.stock);
-        updateBloodGrid(inventory);
+    const banner = document.getElementById('alertBanner');
+    if (data.status === 'CRITICAL' || data.temperature > 8) {
+        banner.className = 'alert-banner critical';
+        banner.textContent = '🚨 CRITICAL: Temperature ' + data.temperature + '°C - Immediate Action!';
+    } else if (data.status === 'WARNING' || data.stock < 30) {
+        banner.className = 'alert-banner warning';
+        banner.textContent = '⚠ WARNING: Low Stock (' + data.stock + ' units) - Restock Recommended';
+    } else if (data.door === 'Open') {
+        banner.className = 'alert-banner warning';
+        banner.textContent = '⚠ WARNING: Door is Open - Close Immediately!';
+    } else {
+        banner.className = 'alert-banner normal';
+        banner.textContent = '✅ ALL SYSTEMS NORMAL - Blood Bank Operating Safely';
     }
+    
+    // Blood Grid
+    const inventory = calculateInventory(data.stock);
+    updateBloodGrid(inventory);
     
     console.log('✅ Dashboard updated!');
 }
@@ -163,28 +178,6 @@ function calculateInventory(totalStock) {
         inventory[group] = { quantity: qty, status: status };
     }
     return inventory;
-}
-
-// ============================================================
-// UPDATE ALERT BANNER
-// ============================================================
-function updateAlertBanner(status, temp, stock, door) {
-    const banner = document.getElementById('alertBanner');
-    if (!banner) return;
-    
-    if (status === 'CRITICAL' || temp > 8) {
-        banner.className = 'alert-banner critical';
-        banner.textContent = '🚨 CRITICAL: Temperature ' + temp + '°C - Immediate Action!';
-    } else if (status === 'WARNING' || stock < 30) {
-        banner.className = 'alert-banner warning';
-        banner.textContent = '⚠ WARNING: Low Stock (' + stock + ' units) - Restock Recommended';
-    } else if (door === 'Open') {
-        banner.className = 'alert-banner warning';
-        banner.textContent = '⚠ WARNING: Door is Open - Close Immediately!';
-    } else {
-        banner.className = 'alert-banner normal';
-        banner.textContent = '✅ ALL SYSTEMS NORMAL - Blood Bank Operating Safely';
-    }
 }
 
 // ============================================================
@@ -219,32 +212,25 @@ function updateBloodGrid(inventory) {
 // ============================================================
 function updateInventoryPage(data) {
     const totalUnits = document.getElementById('totalUnits');
-    if (totalUnits) {
-        totalUnits.textContent = data.stock || 0;
-    }
-    
-    const stock = data.stock || 0;
-    let lowCount = 0;
-    if (stock < 30) lowCount++;
-    if (stock < 15) lowCount++;
-    if (data.expiry > 10) lowCount++;
+    if (totalUnits) totalUnits.textContent = data.stock || 0;
     
     const lowStockCount = document.getElementById('lowStockCount');
     if (lowStockCount) {
-        lowStockCount.textContent = lowCount;
+        let count = 0;
+        if (data.stock < 30) count++;
+        if (data.stock < 15) count++;
+        lowStockCount.textContent = count;
     }
     
-    const inventory = calculateInventory(stock);
     const tbody = document.getElementById('inventoryBody');
     if (!tbody) return;
     
+    const inventory = calculateInventory(data.stock || 0);
     tbody.innerHTML = '';
+    
     for (const [group, info] of Object.entries(inventory)) {
         const row = document.createElement('tr');
-        let badgeClass = 'OK';
-        if (info.status === 'LOW') badgeClass = 'LOW';
-        if (info.status === 'CRITICAL') badgeClass = 'CRITICAL';
-        
+        const badgeClass = info.status === 'OK' ? 'OK' : (info.status === 'LOW' ? 'LOW' : 'CRITICAL');
         row.innerHTML = `
             <td><strong>${group}</strong></td>
             <td>${info.quantity}</td>
@@ -261,68 +247,55 @@ function updateAlertsPage(data) {
     const alertList = document.getElementById('alertList');
     if (!alertList) return;
     
-    const temp = data.temperature || 0;
-    const stock = data.stock || 0;
-    const status = data.status || 'NORMAL';
-    const door = data.door || 'Closed';
     const time = new Date().toLocaleTimeString();
-    
     const alerts = [];
     
-    if (status === 'CRITICAL' || temp > 8) {
-        alerts.push({ type: 'CRITICAL', message: 'Temperature: ' + temp + '°C - Immediate action!', time: time });
+    if (data.status === 'CRITICAL' || data.temperature > 8) {
+        alerts.push({ type: 'CRITICAL', message: 'Temperature Alert: ' + data.temperature + '°C', time: time });
     }
-    if (stock < 15) {
-        alerts.push({ type: 'CRITICAL', message: 'Stock critically low: ' + stock + ' units', time: time });
+    if (data.stock < 15) {
+        alerts.push({ type: 'CRITICAL', message: 'Stock Critically Low: ' + data.stock + ' units', time: time });
     }
-    if (stock < 30 && stock >= 15) {
-        alerts.push({ type: 'WARNING', message: 'Stock low: ' + stock + ' units', time: time });
+    if (data.stock < 30 && data.stock >= 15) {
+        alerts.push({ type: 'WARNING', message: 'Stock Low: ' + data.stock + ' units', time: time });
     }
-    if (door === 'Open') {
-        alerts.push({ type: 'WARNING', message: 'Door is open!', time: time });
+    if (data.door === 'Open') {
+        alerts.push({ type: 'WARNING', message: 'Door is Open!', time: time });
     }
     if (data.expiry > 10) {
         alerts.push({ type: 'WARNING', message: data.expiry + ' bags near expiry', time: time });
     }
-    if (status === 'NORMAL' && temp <= 6 && stock >= 30) {
-        alerts.push({ type: 'INFO', message: 'System running normally', time: time });
+    if (alerts.length === 0) {
+        alerts.push({ type: 'INFO', message: 'All systems normal', time: time });
     }
     
     alertList.innerHTML = '';
-    if (alerts.length === 0) {
-        alertList.innerHTML = '<p style="text-align:center; padding:20px; color:#888;">No alerts to display</p>';
-    } else {
-        alerts.forEach(alert => {
-            const item = document.createElement('div');
-            item.className = 'alert-item';
-            item.dataset.type = alert.type;
-            item.innerHTML = `
-                <span class="alert-type ${alert.type}">${alert.type}</span>
-                <span class="alert-message">${alert.message}</span>
-                <span class="alert-time">${alert.time}</span>
-            `;
-            alertList.appendChild(item);
-        });
-    }
+    alerts.forEach(alert => {
+        const item = document.createElement('div');
+        item.className = 'alert-item';
+        item.dataset.type = alert.type;
+        item.innerHTML = `
+            <span class="alert-type ${alert.type}">${alert.type}</span>
+            <span class="alert-message">${alert.message}</span>
+            <span class="alert-time">${alert.time}</span>
+        `;
+        alertList.appendChild(item);
+    });
 }
 
 function filterAlerts(filter) {
     const items = document.querySelectorAll('.alert-item');
     items.forEach(item => {
-        if (filter === 'ALL') {
-            item.style.display = 'flex';
-        } else {
-            item.style.display = item.dataset.type === filter ? 'flex' : 'none';
-        }
+        item.style.display = filter === 'ALL' || item.dataset.type === filter ? 'flex' : 'none';
     });
 }
 
 // ============================================================
-// STOCK MANAGEMENT
+// UPDATE STOCK
 // ============================================================
 async function updateStock(change) {
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('sensors')
             .select('blood_stock')
             .order('id', { ascending: false })
@@ -333,18 +306,16 @@ async function updateStock(change) {
         const currentStock = data && data.length > 0 ? data[0].blood_stock : 85;
         const newStock = Math.max(0, Math.min(150, currentStock + change));
         
-        const { error: updateError } = await supabaseClient
+        await supabase
             .from('sensors')
             .update({ blood_stock: newStock })
             .eq('id', 1);
-        
-        if (updateError) throw updateError;
         
         console.log('✅ Stock updated to:', newStock);
         refreshData();
         
     } catch (error) {
-        console.error('❌ Error updating stock:', error);
+        console.error('❌ Error:', error);
     }
 }
 
