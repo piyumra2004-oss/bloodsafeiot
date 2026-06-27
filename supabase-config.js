@@ -1,6 +1,5 @@
-// ============================================================
+
 // SUPABASE CONFIGURATION - BLOODSAFE IoT
-// ============================================================
 
 // Your Supabase credentials
 const SUPABASE_URL = 'https://jqdnxrmulgndvcotnfmu.supabase.co';
