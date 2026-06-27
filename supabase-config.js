@@ -1,11 +1,12 @@
 // ============================================================
-// SUPABASE CONFIGURATION
+// SUPABASE CONFIGURATION - BLOODSAFE IoT
 // ============================================================
 
-const supabaseUrl = 'https://jqdnxrmulgndvcotnfmu.supabase.co';
-const supabaseKey = 'sb_publishable_zeKhPNaF8ApBtD2J6ktD1w_sS6k-QZH';
+// Configuration
+const SUPABASE_URL = 'https://jqdnxrmulgndvcotnfmu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zeKhPNaF8ApBtD2J6ktD1w_sS6k-QZH';
 
-// Initialize Supabase client
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+// Create Supabase client
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-console.log('✅ Supabase connected!');
+console.log('✅ Supabase client initialized!');
