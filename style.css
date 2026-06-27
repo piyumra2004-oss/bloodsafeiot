@@ -1,5 +1,5 @@
 /* ============================================================
-   BLOODSAFE IoT - Complete Stylesheet
+   BLOODSAFE IoT - COMPLETE STYLESHEET
    ============================================================ */
 
 * {
@@ -224,7 +224,7 @@ body {
 /* ---------- STATS GRID ---------- */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     margin-bottom: 24px;
 }
@@ -270,10 +270,16 @@ body {
 .stat-status.warning { color: #856404; background: #fff3cd; }
 .stat-status.critical { color: #721c24; background: #f8d7da; }
 
+/* Card Colors */
 .temp-card .stat-value { color: #3498db; }
+.humidity-card .stat-value { color: #00bcd4; }
 .stock-card .stat-value { color: #2ecc71; }
 .expiry-card .stat-value { color: #e67e22; }
+.door-card .stat-value { color: #8e44ad; }
 .status-card .stat-value { color: #667eea; }
+
+.door-card .stat-value.open { color: #e74c3c; }
+.door-card .stat-value.closed { color: #2ecc71; }
 
 /* ---------- SECTIONS ---------- */
 .section {
