@@ -1,5 +1,5 @@
 // ============================================================
-// BLOODSAFE IoT - Dashboard
+// BLOODSAFE IoT - FIXED VERSION
 // ============================================================
 
 let updateInterval = null;
@@ -17,7 +17,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    document.getElementById('userDisplay').textContent = '👤 ' + user.username;
+    const userDisplay = document.getElementById('userDisplay');
+    if (userDisplay) {
+        userDisplay.textContent = '👤 ' + user.username;
+    }
     console.log('👤 User:', user.username);
     
     // Load data
@@ -34,13 +37,6 @@ async function refreshData() {
     try {
         console.log('📡 Fetching data from Supabase...');
         
-        // Check if sb is defined (from supabase-config.js)
-        if (typeof sb === 'undefined') {
-            console.error('❌ Supabase client not defined! Check supabase-config.js');
-            return;
-        }
-        
-        // Fetch latest data from sensors table using 'sb'
         const { data, error } = await sb
             .from('sensors')
             .select('*')
@@ -58,7 +54,6 @@ async function refreshData() {
             const latest = data[0];
             console.log('✅ Latest record:', latest);
             
-            // Build dashboard data
             const dashboardData = {
                 temperature: latest.temperature || 0,
                 stock: latest.blood_stock || 0,
@@ -68,25 +63,8 @@ async function refreshData() {
                 lastUpdated: latest.updated_at || new Date().toISOString()
             };
             
-            // Update all pages
-            updateDashboard(dashboardData);
-            updateInventoryPage(dashboardData);
-            updateAlertsPage(dashboardData);
-            
-        } else {
-            console.warn('⚠️ No data found in sensors table!');
-            // Show default data
-            const defaultData = {
-                temperature: 4,
-                stock: 85,
-                expiry: 5,
-                status: 'NORMAL',
-                door: 'Closed',
-                lastUpdated: new Date().toISOString()
-            };
-            updateDashboard(defaultData);
-            updateInventoryPage(defaultData);
-            updateAlertsPage(defaultData);
+            // UPDATE ONLY THE PAGE WE'RE ON
+            updateCurrentPage(dashboardData);
         }
         
     } catch (error) {
@@ -95,64 +73,100 @@ async function refreshData() {
 }
 
 // ============================================================
+// UPDATE ONLY THE CURRENT PAGE
+// ============================================================
+function updateCurrentPage(data) {
+    // Check which page we're on by looking for unique elements
+    
+    // DASHBOARD PAGE - has tempDisplay
+    if (document.getElementById('tempDisplay')) {
+        console.log('🖥️ Updating dashboard...');
+        updateDashboard(data);
+    }
+    
+    // INVENTORY PAGE - has inventoryBody
+    if (document.getElementById('inventoryBody')) {
+        console.log('📋 Updating inventory page...');
+        updateInventoryPage(data);
+    }
+    
+    // ALERTS PAGE - has alertList
+    if (document.getElementById('alertList')) {
+        console.log('🔔 Updating alerts page...');
+        updateAlertsPage(data);
+    }
+}
+
+// ============================================================
 // UPDATE DASHBOARD
 // ============================================================
 function updateDashboard(data) {
-    console.log('🖥️ Updating dashboard...');
-    
     // Temperature
-    document.getElementById('tempDisplay').textContent = data.temperature + '°C';
+    const tempDisplay = document.getElementById('tempDisplay');
+    if (tempDisplay) tempDisplay.textContent = data.temperature + '°C';
+    
     const tempStatus = document.getElementById('tempStatus');
-    if (data.temperature > 8) {
-        tempStatus.textContent = '🚨 CRITICAL';
-        tempStatus.className = 'stat-status critical';
-    } else if (data.temperature < 2) {
-        tempStatus.textContent = '⚠ LOW';
-        tempStatus.className = 'stat-status warning';
-    } else {
-        tempStatus.textContent = '✅ Normal';
-        tempStatus.className = 'stat-status normal';
+    if (tempStatus) {
+        if (data.temperature > 8) {
+            tempStatus.textContent = '🚨 CRITICAL';
+            tempStatus.className = 'stat-status critical';
+        } else if (data.temperature < 2) {
+            tempStatus.textContent = '⚠ LOW';
+            tempStatus.className = 'stat-status warning';
+        } else {
+            tempStatus.textContent = '✅ Normal';
+            tempStatus.className = 'stat-status normal';
+        }
     }
     
     // Stock
-    document.getElementById('stockDisplay').textContent = data.stock;
+    const stockDisplay = document.getElementById('stockDisplay');
+    if (stockDisplay) stockDisplay.textContent = data.stock;
+    
     const stockStatus = document.getElementById('stockStatus');
-    if (data.stock < 15) {
-        stockStatus.textContent = '🚨 CRITICAL';
-        stockStatus.className = 'stat-status critical';
-    } else if (data.stock < 30) {
-        stockStatus.textContent = '⚠ LOW';
-        stockStatus.className = 'stat-status warning';
-    } else {
-        stockStatus.textContent = '✅ Sufficient';
-        stockStatus.className = 'stat-status normal';
+    if (stockStatus) {
+        if (data.stock < 15) {
+            stockStatus.textContent = '🚨 CRITICAL';
+            stockStatus.className = 'stat-status critical';
+        } else if (data.stock < 30) {
+            stockStatus.textContent = '⚠ LOW';
+            stockStatus.className = 'stat-status warning';
+        } else {
+            stockStatus.textContent = '✅ Sufficient';
+            stockStatus.className = 'stat-status normal';
+        }
     }
     
     // Expiry
-    document.getElementById('expiryDisplay').textContent = data.expiry;
+    const expiryDisplay = document.getElementById('expiryDisplay');
+    if (expiryDisplay) expiryDisplay.textContent = data.expiry;
     
     // System Status
-    document.getElementById('systemStatus').textContent = data.status;
-    document.getElementById('systemStatus').className = data.status.toLowerCase();
+    const systemStatus = document.getElementById('systemStatus');
+    if (systemStatus) {
+        systemStatus.textContent = data.status;
+        systemStatus.className = data.status.toLowerCase();
+    }
     
     // Last Update
-    document.getElementById('lastUpdate').textContent = 
-        data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString() : '--';
+    const lastUpdate = document.getElementById('lastUpdate');
+    if (lastUpdate) {
+        lastUpdate.textContent = data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString() : '--';
+    }
     
     // Alert Banner
     const banner = document.getElementById('alertBanner');
-    if (data.status === 'CRITICAL' || data.temperature > 8) {
-        banner.className = 'alert-banner critical';
-        banner.textContent = '🚨 CRITICAL: Temperature ' + data.temperature + '°C - Immediate Action!';
-    } else if (data.status === 'WARNING' || data.stock < 30) {
-        banner.className = 'alert-banner warning';
-        banner.textContent = '⚠ WARNING: Low Stock (' + data.stock + ' units) - Restock Recommended';
-    } else if (data.door === 'Open') {
-        banner.className = 'alert-banner warning';
-        banner.textContent = '⚠ WARNING: Door is Open - Close Immediately!';
-    } else {
-        banner.className = 'alert-banner normal';
-        banner.textContent = '✅ ALL SYSTEMS NORMAL - Blood Bank Operating Safely';
+    if (banner) {
+        if (data.status === 'CRITICAL' || data.temperature > 8) {
+            banner.className = 'alert-banner critical';
+            banner.textContent = '🚨 CRITICAL: Temperature ' + data.temperature + '°C - Immediate Action!';
+        } else if (data.status === 'WARNING' || data.stock < 30) {
+            banner.className = 'alert-banner warning';
+            banner.textContent = '⚠ WARNING: Low Stock (' + data.stock + ' units)';
+        } else {
+            banner.className = 'alert-banner normal';
+            banner.textContent = '✅ ALL SYSTEMS NORMAL - Blood Bank Operating Safely';
+        }
     }
     
     // Blood Grid
@@ -211,8 +225,12 @@ function updateBloodGrid(inventory) {
 // INVENTORY PAGE
 // ============================================================
 function updateInventoryPage(data) {
+    console.log('📋 Updating inventory page...');
+    
     const totalUnits = document.getElementById('totalUnits');
-    if (totalUnits) totalUnits.textContent = data.stock || 0;
+    if (totalUnits) {
+        totalUnits.textContent = data.stock || 0;
+    }
     
     const lowStockCount = document.getElementById('lowStockCount');
     if (lowStockCount) {
@@ -238,6 +256,8 @@ function updateInventoryPage(data) {
         `;
         tbody.appendChild(row);
     }
+    
+    console.log('✅ Inventory updated with', Object.keys(inventory).length, 'blood types');
 }
 
 // ============================================================
@@ -291,7 +311,7 @@ function filterAlerts(filter) {
 }
 
 // ============================================================
-// UPDATE STOCK
+// STOCK MANAGEMENT
 // ============================================================
 async function updateStock(change) {
     try {
