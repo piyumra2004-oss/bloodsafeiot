@@ -104,17 +104,30 @@ function updateDashboard(data) {
     
     const tempStatus = document.getElementById('tempStatus');
     if (tempStatus) {
-        if (data.temperature > 8) {
-            tempStatus.textContent = '🚨 CRITICAL';
-            tempStatus.className = 'stat-status critical';
-        } else if (data.temperature < 2) {
-            tempStatus.textContent = '⚠ LOW';
-            tempStatus.className = 'stat-status warning';
-        } else {
-            tempStatus.textContent = '✅ Normal';
-            tempStatus.className = 'stat-status normal';
-        }
+      // ============================================================
+// 🌡️ TEMPERATURE - UPDATED THRESHOLDS
+// ============================================================
+const temp = data.temperature;
+document.getElementById('tempDisplay').textContent = temp + '°C';
+
+const tempStatus = document.getElementById('tempStatus');
+if (tempStatus) {
+    if (temp > 25) {
+        tempStatus.textContent = '🚨 CRITICAL';
+        tempStatus.className = 'stat-status critical';
+        document.querySelector('.temp-card').classList.add('critical');
+    } else if (temp < 15) {
+        tempStatus.textContent = '⚠ LOW';
+        tempStatus.className = 'stat-status warning';
+        document.querySelector('.temp-card').classList.remove('critical');
+    } else {
+        tempStatus.textContent = '✅ Normal';
+        tempStatus.className = 'stat-status normal';
+        document.querySelector('.temp-card').classList.remove('critical');
     }
+} 
+       
+
     
     // ============================================================
     // 💧 HUMIDITY
