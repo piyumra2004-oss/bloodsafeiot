@@ -5,9 +5,182 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BloodSafe IoT - Alerts</title>
     <link rel="stylesheet" href="style.css" />
+    <style>
+        /* Additional styles for alerts page */
+        .alert-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: #6b7280;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .alert-list {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #eef2f6;
+            overflow: hidden;
+        }
+
+        .alert-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .alert-item:hover {
+            background: #fafbfc;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-item .alert-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+        }
+
+        .alert-item .alert-type {
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .alert-type.CRITICAL {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-type.WARNING {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .alert-type.INFO {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .alert-item .alert-message {
+            font-size: 14px;
+            color: #1a1a2e;
+            font-weight: 500;
+        }
+
+        .alert-item .alert-time {
+            font-size: 13px;
+            color: #9ca3af;
+            white-space: nowrap;
+        }
+
+        .alert-empty {
+            text-align: center;
+            padding: 48px 20px;
+            color: #9ca3af;
+        }
+
+        .alert-empty .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .alert-empty h3 {
+            font-size: 18px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .alert-empty p {
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .action-btn.secondary {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .action-btn.secondary:hover {
+            background: #e5e7eb;
+            box-shadow: none;
+        }
+
+        @media (max-width: 640px) {
+            .alert-item {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .alert-item .alert-left {
+                flex-wrap: wrap;
+            }
+            .alert-item .alert-time {
+                margin-left: auto;
+            }
+        }
+    </style>
 </head>
 <body>
 
+    <!-- ============================================================
+    NAVIGATION
+    ============================================================ -->
     <nav class="navbar">
         <div class="nav-brand">🩸 BloodSafe IoT</div>
         <div class="nav-links">
@@ -20,9 +193,23 @@
         </div>
     </nav>
 
+    <!-- ============================================================
+    ALERTS CONTENT
+    ============================================================ -->
     <main class="dashboard">
-        <h1>🔔 Alert History</h1>
 
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1>🔔 Alert History</h1>
+                <p>Real-time alerts and notifications</p>
+            </div>
+            <div class="header-time">
+                🕐 Last Update: <span id="lastUpdateHeader">--</span>
+            </div>
+        </div>
+
+        <!-- Alert Filters -->
         <div class="alert-filters">
             <button onclick="filterAlerts('ALL')" class="filter-btn active">All</button>
             <button onclick="filterAlerts('CRITICAL')" class="filter-btn">Critical</button>
@@ -30,22 +217,262 @@
             <button onclick="filterAlerts('INFO')" class="filter-btn">Information</button>
         </div>
 
-        <div class="section">
-            <div class="alert-list" id="alertList">
-                <p style="text-align:center; padding:20px; color:#888;">Loading alerts...</p>
-            </div>
+        <!-- Alert List -->
+        <div class="alert-list" id="alertList">
+            <!-- Populated by JavaScript -->
         </div>
 
-        <div class="section">
-            <div class="action-buttons">
-                <button onclick="refreshData()" class="action-btn">🔄 Refresh Alerts</button>
-                <button onclick="window.location.href='index.html'" class="action-btn">📊 Back to Dashboard</button>
-            </div>
+        <!-- Actions -->
+        <div class="action-buttons">
+            <button onclick="refreshData()" class="action-btn">🔄 Refresh Alerts</button>
+            <button onclick="window.location.href='index.html'" class="action-btn secondary">📊 Back to Dashboard</button>
         </div>
+
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
-    <script src="script.js"></script>
+    <!-- ============================================================
+    SCRIPTS
+    ============================================================ -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+    <script src="supabase-config.js">
+    </script>
+    <script>
+        // ============================================================
+        // BLOODSAFE IoT - ALERTS PAGE
+        // ============================================================
+
+        let currentFilter = 'ALL';
+
+        // ============================================================
+        // PAGE LOAD
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('userDisplay').textContent = '👤 ' + user.username;
+
+            refreshData();
+            setInterval(refreshData, 10000);
+        });
+
+        // ============================================================
+        // FETCH DATA FROM SUPABASE
+        // ============================================================
+        async function refreshData() {
+            try {
+                console.log('📡 Fetching alerts...');
+
+                // Get latest sensor data
+                const { data: sensorData, error: sensorError } = await sb
+                    .from('sensors')
+                    .select('*')
+                    .order('id', { ascending: false })
+                    .limit(1);
+
+                if (sensorError) {
+                    console.error('❌ Sensor error:', sensorError);
+                    return;
+                }
+
+                // Get alerts from alerts table
+                const { data: alertData, error: alertError } = await sb
+                    .from('alerts')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+
+                if (alertError) {
+                    console.error('❌ Alert error:', alertError);
+                }
+
+                console.log('📊 Alerts from Supabase:', alertData);
+
+                // Build alerts array from sensor data + database alerts
+                const alerts = buildAlerts(sensorData[0], alertData || []);
+
+                // Update the display
+                renderAlerts(alerts);
+
+                // Update header time
+                document.getElementById('lastUpdateHeader').textContent = new Date().toLocaleTimeString();
+
+            } catch (error) {
+                console.error('❌ Error:', error.message);
+            }
+        }
+
+        // ============================================================
+        // BUILD ALERTS FROM SENSOR DATA + DATABASE
+        // ============================================================
+        function buildAlerts(sensor, dbAlerts) {
+            const alerts = [];
+            const time = new Date().toLocaleTimeString();
+
+            // Add alerts from database (if any)
+            if (dbAlerts && dbAlerts.length > 0) {
+                dbAlerts.forEach(alert => {
+                    alerts.push({
+                        type: alert.severity || 'INFO',
+                        message: alert.message || 'System alert',
+                        time: new Date(alert.created_at).toLocaleTimeString()
+                    });
+                });
+            }
+
+            // Add real-time alerts from sensor data
+            if (sensor) {
+                const temp = sensor.temperature || 0;
+                const stock = sensor.blood_stock || 0;
+                const expiry = sensor.expiry_count || 0;
+                const door = sensor.door_status || 'Closed';
+                const status = sensor.status || 'NORMAL';
+
+                // Temperature Alert
+                if (temp > 8) {
+                    alerts.unshift({
+                        type: 'CRITICAL',
+                        message: '🔥 Temperature critical: ' + temp + '°C',
+                        time: time
+                    });
+                } else if (temp > 6) {
+                    alerts.unshift({
+                        type: 'WARNING',
+                        message: '⚠️ Temperature warning: ' + temp + '°C',
+                        time: time
+                    });
+                }
+
+                // Stock Alert
+                if (stock < 15) {
+                    alerts.unshift({
+                        type: 'CRITICAL',
+                        message: '📦 Stock critically low: ' + stock + ' units',
+                        time: time
+                    });
+                } else if (stock < 30) {
+                    alerts.unshift({
+                        type: 'WARNING',
+                        message: '📦 Stock low: ' + stock + ' units',
+                        time: time
+                    });
+                }
+
+                // Door Alert
+                if (door === 'Open') {
+                    alerts.unshift({
+                        type: 'WARNING',
+                        message: '🚪 Door is OPEN!',
+                        time: time
+                    });
+                }
+
+                // Expiry Alert
+                if (expiry > 15) {
+                    alerts.unshift({
+                        type: 'CRITICAL',
+                        message: '⏰ ' + expiry + ' bags near expiry!',
+                        time: time
+                    });
+                } else if (expiry > 10) {
+                    alerts.unshift({
+                        type: 'WARNING',
+                        message: '⏰ ' + expiry + ' bags near expiry',
+                        time: time
+                    });
+                }
+
+                // Normal status
+                if (status === 'NORMAL' && alerts.length === 0) {
+                    alerts.unshift({
+                        type: 'INFO',
+                        message: '✅ All systems normal',
+                        time: time
+                    });
+                }
+            }
+
+            // Remove duplicates (keep latest)
+            const seen = new Set();
+            return alerts.filter(alert => {
+                const key = alert.type + alert.message;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+        }
+
+        // ============================================================
+        // RENDER ALERTS
+        // ============================================================
+        function renderAlerts(alerts) {
+            const container = document.getElementById('alertList');
+            if (!container) return;
+
+            // Apply filter
+            const filtered = currentFilter === 'ALL' ?
+                alerts :
+                alerts.filter(a => a.type === currentFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="alert-empty">
+                        <div class="icon">🔔</div>
+                        <h3>No alerts</h3>
+                        <p>All systems are running normally</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            filtered.forEach(alert => {
+                const item = document.createElement('div');
+                item.className = 'alert-item';
+                item.dataset.type = alert.type;
+                item.innerHTML = `
+                    <div class="alert-left">
+                        <span class="alert-type ${alert.type}">${alert.type}</span>
+                        <span class="alert-message">${alert.message}</span>
+                    </div>
+                    <span class="alert-time">${alert.time}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // ============================================================
+        // FILTER ALERTS
+        // ============================================================
+        function filterAlerts(filter) {
+            currentFilter = filter;
+
+            // Update button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toUpperCase() === filter ||
+                    btn.textContent === filter ||
+                    (filter === 'ALL' && btn.textContent === 'All')) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Re-render with filter
+            refreshData();
+        }
+
+        // ============================================================
+        // LOGOUT
+        // ============================================================
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+    </script>
+
 </body>
 </html>
