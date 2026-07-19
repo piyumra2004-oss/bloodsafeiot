@@ -1,5 +1,5 @@
 // ============================================================
-// BLOODSAFE IoT - COMPLETE SCRIPT (FIXED)
+// BLOODSAFE IoT - COMPLETE SCRIPT (CLEAN VERSION)
 // ============================================================
 
 let updateInterval = null;
@@ -97,37 +97,25 @@ function updateDashboard(data) {
     console.log('🖥️ Updating dashboard...');
     
     // ============================================================
-    // 🌡️ TEMPERATURE
+    // 🌡️ TEMPERATURE - NEW THRESHOLDS (15-25°C = NORMAL)
     // ============================================================
+    const temp = data.temperature;
     const tempDisplay = document.getElementById('tempDisplay');
-    if (tempDisplay) tempDisplay.textContent = data.temperature + '°C';
+    if (tempDisplay) tempDisplay.textContent = temp + '°C';
     
     const tempStatus = document.getElementById('tempStatus');
     if (tempStatus) {
-      // ============================================================
-// 🌡️ TEMPERATURE - UPDATED THRESHOLDS
-// ============================================================
-const temp = data.temperature;
-document.getElementById('tempDisplay').textContent = temp + '°C';
-
-const tempStatus = document.getElementById('tempStatus');
-if (tempStatus) {
-    if (temp > 25) {
-        tempStatus.textContent = '🚨 CRITICAL';
-        tempStatus.className = 'stat-status critical';
-        document.querySelector('.temp-card').classList.add('critical');
-    } else if (temp < 15) {
-        tempStatus.textContent = '⚠ LOW';
-        tempStatus.className = 'stat-status warning';
-        document.querySelector('.temp-card').classList.remove('critical');
-    } else {
-        tempStatus.textContent = '✅ Normal';
-        tempStatus.className = 'stat-status normal';
-        document.querySelector('.temp-card').classList.remove('critical');
+        if (temp > 25) {
+            tempStatus.textContent = '🚨 CRITICAL';
+            tempStatus.className = 'stat-status critical';
+        } else if (temp < 15) {
+            tempStatus.textContent = '⚠ LOW';
+            tempStatus.className = 'stat-status warning';
+        } else {
+            tempStatus.textContent = '✅ Normal';
+            tempStatus.className = 'stat-status normal';
+        }
     }
-} 
-       
-
     
     // ============================================================
     // 💧 HUMIDITY
@@ -237,20 +225,23 @@ if (tempStatus) {
     }
     
     // ============================================================
-    // 🚨 ALERT BANNER
+    // 🚨 ALERT BANNER - UPDATED THRESHOLDS
     // ============================================================
     const banner = document.getElementById('alertBanner');
     if (banner) {
-        if (data.status === 'CRITICAL_TEMP' || data.temperature > 8) {
+        if (data.temperature > 25) {
             banner.className = 'alert-banner critical';
             banner.textContent = '🚨 CRITICAL: Temperature ' + data.temperature + '°C';
+        } else if (data.temperature < 15) {
+            banner.className = 'alert-banner warning';
+            banner.textContent = '⚠ WARNING: Temperature ' + data.temperature + '°C (Below safe range)';
         } else if (data.door === 'Open') {
             banner.className = 'alert-banner critical';
             banner.textContent = '🚨 CRITICAL: Door is OPEN!';
-        } else if (data.status === 'LOW_STOCK' || data.stock < 30) {
+        } else if (data.stock < 30) {
             banner.className = 'alert-banner warning';
             banner.textContent = '⚠ WARNING: Low Stock (' + data.stock + ' units)';
-        } else if (data.status === 'NEAR_EXPIRY' || data.expiry > 10) {
+        } else if (data.expiry > 10) {
             banner.className = 'alert-banner warning';
             banner.textContent = '⚠ WARNING: ' + data.expiry + ' bags near expiry';
         } else {
@@ -314,7 +305,7 @@ function updateBloodGrid(inventory) {
 }
 
 // ============================================================
-// INVENTORY PAGE - FIXED LOW STOCK COUNT
+// INVENTORY PAGE
 // ============================================================
 function updateInventoryPage(data) {
     console.log('📋 Updating inventory page...');
@@ -327,7 +318,7 @@ function updateInventoryPage(data) {
     }
     
     // ============================================================
-    // 🔥 FIXED: Count LOW + CRITICAL blood types
+    // Count LOW + CRITICAL blood types
     // ============================================================
     const inventory = calculateInventory(data.stock || 0);
     
@@ -386,16 +377,17 @@ function updateAlertsPage(data) {
     const time = new Date().toLocaleTimeString();
     const alerts = [];
     
-    if (data.status === 'CRITICAL_TEMP' || data.temperature > 8) {
+    if (data.temperature > 25) {
         alerts.push({ type: 'CRITICAL', message: 'Temperature: ' + data.temperature + '°C', time: time });
+    } else if (data.temperature < 15) {
+        alerts.push({ type: 'WARNING', message: 'Temperature: ' + data.temperature + '°C (Below safe range)', time: time });
     }
     if (data.door === 'Open') {
         alerts.push({ type: 'CRITICAL', message: 'Door is OPEN!', time: time });
     }
     if (data.stock < 15) {
         alerts.push({ type: 'CRITICAL', message: 'Stock: ' + data.stock + ' units', time: time });
-    }
-    if (data.stock < 30 && data.stock >= 15) {
+    } else if (data.stock < 30) {
         alerts.push({ type: 'WARNING', message: 'Stock Low: ' + data.stock + ' units', time: time });
     }
     if (data.expiry > 10) {
