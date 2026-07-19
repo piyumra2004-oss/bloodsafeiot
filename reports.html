@@ -301,54 +301,56 @@
             console.log('📊 Temp Data:', tempData);
             console.log('📊 Stock Data:', stockData);
 
-            // ============================================================
-            // TEMPERATURE CHART
-            // ============================================================
             if (tempChart) tempChart.destroy();
 
-            const tempCtx = document.getElementById('tempChart');
-            if (tempCtx) {
-                tempChart = new Chart(tempCtx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Temperature (°C)',
-                            data: tempData,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.15)',
-                            borderWidth: 4,
-                            fill: true,
-                            tension: 0.3,
-                            pointBackgroundColor: '#3b82f6',
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 2,
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                        }]
+    const tempCtx = document.getElementById('tempChart');
+    if (tempCtx) {
+        tempChart = new Chart(tempCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: tempData,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                    borderWidth: 4,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                },
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 12,
+                        title: { display: true, text: 'Temperature (°C)' },
+                        grid: { color: 'rgba(0,0,0,0.06)' }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: true, position: 'top' }
-                        },
-                        scales: {
-                            y: {
-                                min: 0,
-                                max: 12,
-                                title: { display: true, text: 'Temperature (°C)' },
-                                grid: { color: 'rgba(0,0,0,0.06)' }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 10 }
-                            }
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            maxTicksLimit: 6,        // ← SHOW ONLY 6 LABELS
+                            maxRotation: 0,          // ← KEEP HORIZONTAL
+                            autoSkip: true,          // ← AUTO-SKIP CROWDED LABELS
+                            font: { size: 11 }
                         }
                     }
-                });
-                console.log('✅ Temperature chart created');
+                }
             }
+        });
+        console.log('✅ Temperature chart created');
+    }
 
             // ============================================================
             // STOCK CHART
