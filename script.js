@@ -1,16 +1,8 @@
-// ============================================================
-// BLOODSAFE IoT - COMPLETE SCRIPT (CLEAN VERSION)
-// ============================================================
 
 let updateInterval = null;
-
-// ============================================================
-// PAGE LOAD
-// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔄 Page loaded');
     
-    // Check login
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
         window.location.href = 'login.html';
@@ -23,16 +15,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     console.log('👤 User:', user.username);
     
-    // Load data
     refreshData();
     
-    // Auto-refresh every 5 seconds
     updateInterval = setInterval(refreshData, 5000);
 });
 
-// ============================================================
-// FETCH DATA FROM SUPABASE
-// ============================================================
 async function refreshData() {
     try {
         console.log('📡 Fetching data from Supabase...');
