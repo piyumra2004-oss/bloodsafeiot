@@ -13,7 +13,7 @@ function updateInventoryPage(data) {
     }
     
     // ============================================================
-    // BLOOD TYPES - FIXED
+    // BLOOD TYPES
     // ============================================================
     const bloodTypes = document.getElementById('bloodTypes');
     if (bloodTypes) {
@@ -22,7 +22,7 @@ function updateInventoryPage(data) {
     }
     
     // ============================================================
-    // LOW STOCK TYPES - FIXED: Count from inventory
+    // LOW STOCK TYPES - Count from inventory
     // ============================================================
     let lowStockTypes = 0;
     if (data.inventory) {
@@ -39,7 +39,7 @@ function updateInventoryPage(data) {
     }
     
     // ============================================================
-    // INVENTORY TABLE - FIXED: Added Minimum Stock column
+    // INVENTORY TABLE - FIXED: Added <td> tags
     // ============================================================
     const tbody = document.getElementById('inventoryBody');
     if (!tbody) return;
@@ -57,7 +57,7 @@ function updateInventoryPage(data) {
         row.innerHTML = `
             <td><strong>${item.blood_group}</strong></td>
             <td>${item.quantity}</td>
-            <td>${item.minimum_stock}</td> <!-- ✅ ADDED: Minimum stock -->
+            <td>${item.minimum_stock}</td>
             <td><span class="status-badge ${status.class}">${status.label}</span></td>
         `;
         tbody.appendChild(row);
