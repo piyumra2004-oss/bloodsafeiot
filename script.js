@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ============================================================
-// MAIN FETCH FUNCTION
+// MAIN FETCH FUNCTION (FIXED - Counts low stock from inventory)
 // ============================================================
 async function fetchDashboardData() {
     try {
@@ -68,9 +68,11 @@ async function fetchDashboardData() {
         if (inventoryData) {
             inventoryData.forEach(item => {
                 totalStock += item.quantity || 0;
+                
                 if (item.days_until_expiry !== null && item.days_until_expiry <= 7 && item.days_until_expiry >= 0) {
                     nearExpiry++;
                 }
+                
                 // ✅ Count ALL items below minimum_stock
                 if (item.quantity < item.minimum_stock) {
                     lowStockCount++;
@@ -93,6 +95,7 @@ async function fetchDashboardData() {
         };
         
         console.log('📊 Dashboard Data:', dashboardData);
+        console.log('📊 Low stock count:', lowStockCount);
         updateCurrentPage(dashboardData);
         
     } catch (error) {
@@ -256,7 +259,7 @@ function updateDashboard(data) {
 }
 
 // ============================================================
-// 🩸 BLOOD GRID
+// 🩸 BLOOD GRID (Color-Coded)
 // ============================================================
 function updateBloodGrid(inventory) {
     const grid = document.getElementById('bloodGrid');
@@ -370,62 +373,38 @@ function updateRecentAlerts(alerts) {
 // ============================================================
 function updateInventoryPage(data) {
     console.log('📋 Updating inventory page...');
-    console.log('📊 Data received:', data);
-    console.log('📊 Inventory data:', data.inventory);
     
-    // ============================================================
-    // TOTAL UNITS
-    // ============================================================
+    // Total units
     const totalUnits = document.getElementById('totalUnits');
     if (totalUnits) {
         totalUnits.textContent = data.stock || 0;
-        console.log('✅ Total units:', data.stock);
     }
     
-    // ============================================================
-    // BLOOD TYPES - FIXED
-    // ============================================================
+    // Blood Types
     const bloodTypes = document.getElementById('bloodTypes');
-    console.log('🔍 bloodTypes element:', bloodTypes);
     if (bloodTypes) {
         const count = data.inventory ? data.inventory.length : 0;
         bloodTypes.textContent = count + ' Types';
-        console.log('✅ Blood types:', count + ' Types');
-    } else {
-        console.log('❌ bloodTypes element not found!');
     }
     
-    // ============================================================
-    // LOW STOCK TYPES - FIXED: Count from inventory
-    // ============================================================
+    // Low Stock Types - Count from inventory
     let lowStockTypes = 0;
     if (data.inventory) {
         data.inventory.forEach(item => {
-            console.log('🔍 Checking:', item.blood_group, 'Qty:', item.quantity, 'Min:', item.minimum_stock);
             if (item.quantity < item.minimum_stock) {
                 lowStockTypes++;
-                console.log('⚠️ Low stock:', item.blood_group);
             }
         });
     }
     
     const lowStockCount = document.getElementById('lowStockCount');
-    console.log('🔍 lowStockCount element:', lowStockCount);
     if (lowStockCount) {
         lowStockCount.textContent = lowStockTypes;
-        console.log('✅ Low stock types:', lowStockTypes);
-    } else {
-        console.log('❌ lowStockCount element not found!');
     }
     
-    // ============================================================
-    // INVENTORY TABLE
-    // ============================================================
+    // Inventory table
     const tbody = document.getElementById('inventoryBody');
-    if (!tbody) {
-        console.error('❌ inventoryBody not found!');
-        return;
-    }
+    if (!tbody) return;
     
     tbody.innerHTML = '';
     
@@ -445,8 +424,6 @@ function updateInventoryPage(data) {
         `;
         tbody.appendChild(row);
     });
-    
-    console.log('✅ Inventory table updated!');
 }
 
 // ============================================================
