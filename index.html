@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+    <!-- ============================================
+    NAVIGATION
+    ============================================ -->
     <nav class="navbar">
         <div class="nav-brand">🩸 BloodSafe IoT</div>
         <div class="nav-links">
@@ -18,11 +21,22 @@
             <button onclick="logout()" class="logout-btn">Logout</button>
         </div>
     </nav>
+
+    <!-- ============================================
+    MAIN DASHBOARD
+    ============================================ -->
     <main class="dashboard">
+        
+        <!-- Alert Banner -->
         <div id="alertBanner" class="alert-banner normal">
             ✅ ALL SYSTEMS NORMAL - Blood Bank Operating Safely
         </div>
+
+        <!-- ============================================
+        STATS GRID (6 Cards)
+        ============================================ -->
         <div class="stats-grid">
+            <!-- Card 1: Temperature -->
             <div class="stat-card temp-card">
                 <div class="stat-icon">🌡️</div>
                 <div class="stat-label">Temperature</div>
@@ -30,7 +44,7 @@
                 <div class="stat-status" id="tempStatus">Loading...</div>
             </div>
 
-            <!-- Humidity -->
+            <!-- Card 2: Humidity -->
             <div class="stat-card humidity-card">
                 <div class="stat-icon">💧</div>
                 <div class="stat-label">Humidity</div>
@@ -38,7 +52,7 @@
                 <div class="stat-status" id="humidityStatus">Loading...</div>
             </div>
 
-            <!-- Stock -->
+            <!-- Card 3: Total Stock -->
             <div class="stat-card stock-card">
                 <div class="stat-icon">📦</div>
                 <div class="stat-label">Total Stock</div>
@@ -46,7 +60,7 @@
                 <div class="stat-status" id="stockStatus">Loading...</div>
             </div>
 
-            <!-- Expiry -->
+            <!-- Card 4: Near Expiry -->
             <div class="stat-card expiry-card">
                 <div class="stat-icon">⏰</div>
                 <div class="stat-label">Near Expiry</div>
@@ -54,7 +68,7 @@
                 <div class="stat-status" id="expiryStatus">Loading...</div>
             </div>
 
-            <!-- Door Status -->
+            <!-- Card 5: Door Status -->
             <div class="stat-card door-card">
                 <div class="stat-icon">🚪</div>
                 <div class="stat-label">Door Status</div>
@@ -62,7 +76,7 @@
                 <div class="stat-status" id="doorStatus">Loading...</div>
             </div>
 
-            <!-- System Status -->
+            <!-- Card 6: System Status -->
             <div class="stat-card status-card">
                 <div class="stat-icon">📊</div>
                 <div class="stat-label">System Status</div>
@@ -71,28 +85,75 @@
             </div>
         </div>
 
-        <!-- Blood Inventory -->
+        <!-- ============================================
+        BLOOD INVENTORY OVERVIEW (With Color Coding)
+        ============================================ -->
         <div class="section">
-            <h2>Blood Inventory Overview</h2>
+            <h2>🩸 Blood Inventory Overview</h2>
             <div class="blood-grid" id="bloodGrid">
                 <!-- Populated by JavaScript -->
             </div>
         </div>
 
-        <!-- Quick Actions -->
+        <!-- ============================================
+        EXPIRY TRACKING TABLE
+        ============================================ -->
         <div class="section">
-            <h2>Quick Actions</h2>
+            <h2>📅 Expiry Tracking</h2>
+            <div class="table-container">
+                <table id="expiryTable">
+                    <thead>
+                        <tr>
+                            <th>Blood Type</th>
+                            <th>Quantity</th>
+                            <th>Expiry Date</th>
+                            <th>Days Left</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expiryBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ============================================
+        RECENT ALERTS (Stock + Expiry + Temperature)
+        ============================================ -->
+        <div class="section">
+            <h2>🔔 Recent Alerts</h2>
+            <div class="alerts-list" id="alertsList">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- ============================================
+        QUICK ACTIONS
+        ============================================ -->
+        <div class="section">
+            <h2>⚡ Quick Actions</h2>
             <div class="action-buttons">
-                <button onclick="refreshData()" class="action-btn">🔄 Refresh</button>
+                <button onclick="refreshData()" class="action-btn">🔄 Refresh Data</button>
+                <button onclick="window.location.href='inventory.html'" class="action-btn">📦 Manage Inventory</button>
+                <button onclick="window.location.href='alerts.html'" class="action-btn">🔔 View All Alerts</button>
             </div>
         </div>
 
     </main>
 
-    <!-- Supabase SDK -->
+    <!-- ============================================
+    FOOTER
+    ============================================ -->
+    <footer>
+        <p>© 2026 BloodSafe IoT - Suwa Setha Hospital | All Rights Reserved</p>
+    </footer>
+
+    <!-- ============================================
+    SCRIPTS
+    ============================================ -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="script.js"></script>
-
 </body>
 </html>
