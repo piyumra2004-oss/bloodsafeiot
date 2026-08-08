@@ -371,22 +371,31 @@ function updateRecentAlerts(alerts) {
 function updateInventoryPage(data) {
     console.log('📋 Updating inventory page...');
     
+    // ============================================================
+    // TOTAL UNITS
+    // ============================================================
     const totalUnits = document.getElementById('totalUnits');
     if (totalUnits) {
         totalUnits.textContent = data.stock || 0;
     }
     
-    // ✅ Count low stock from inventory data
-    let lowStockTypes = 0;
-    let criticalTypes = 0;
+    // ============================================================
+    // BLOOD TYPES - FIXED
+    // ============================================================
+    const bloodTypes = document.getElementById('bloodTypes');
+    if (bloodTypes) {
+        const count = data.inventory ? data.inventory.length : 0;
+        bloodTypes.textContent = count + ' Types';
+    }
     
+    // ============================================================
+    // LOW STOCK TYPES - FIXED: Count from inventory
+    // ============================================================
+    let lowStockTypes = 0;
     if (data.inventory) {
         data.inventory.forEach(item => {
             if (item.quantity < item.minimum_stock) {
                 lowStockTypes++;
-                if (item.quantity < item.minimum_stock * 0.6) {
-                    criticalTypes++;
-                }
             }
         });
     }
@@ -396,13 +405,16 @@ function updateInventoryPage(data) {
         lowStockCount.textContent = lowStockTypes;
     }
     
+    // ============================================================
+    // INVENTORY TABLE - FIXED: Added Minimum Stock column
+    // ============================================================
     const tbody = document.getElementById('inventoryBody');
     if (!tbody) return;
     
     tbody.innerHTML = '';
     
     if (!data.inventory || data.inventory.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3">No inventory data available</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4">No inventory data available</td></tr>';
         return;
     }
     
@@ -412,12 +424,11 @@ function updateInventoryPage(data) {
         row.innerHTML = `
             <td><strong>${item.blood_group}</strong></td>
             <td>${item.quantity}</td>
+            <td>${item.minimum_stock}</td>
             <td><span class="status-badge ${status.class}">${status.label}</span></td>
         `;
         tbody.appendChild(row);
     });
-    
-    console.log('✅ Low stock types:', lowStockTypes);
 }
 
 // ============================================================
