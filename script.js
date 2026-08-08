@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ============================================================
-// MAIN FETCH FUNCTION (Renamed to avoid recursion)
+// MAIN FETCH FUNCTION
 // ============================================================
 async function fetchDashboardData() {
     try {
@@ -71,6 +71,7 @@ async function fetchDashboardData() {
                 if (item.days_until_expiry !== null && item.days_until_expiry <= 7 && item.days_until_expiry >= 0) {
                     nearExpiry++;
                 }
+                // ✅ Count ALL items below minimum_stock
                 if (item.quantity < item.minimum_stock) {
                     lowStockCount++;
                 }
@@ -365,7 +366,7 @@ function updateRecentAlerts(alerts) {
 }
 
 // ============================================================
-// INVENTORY PAGE
+// INVENTORY PAGE (FIXED)
 // ============================================================
 function updateInventoryPage(data) {
     console.log('📋 Updating inventory page...');
@@ -375,9 +376,24 @@ function updateInventoryPage(data) {
         totalUnits.textContent = data.stock || 0;
     }
     
+    // ✅ Count low stock from inventory data
+    let lowStockTypes = 0;
+    let criticalTypes = 0;
+    
+    if (data.inventory) {
+        data.inventory.forEach(item => {
+            if (item.quantity < item.minimum_stock) {
+                lowStockTypes++;
+                if (item.quantity < item.minimum_stock * 0.6) {
+                    criticalTypes++;
+                }
+            }
+        });
+    }
+    
     const lowStockCount = document.getElementById('lowStockCount');
     if (lowStockCount) {
-        lowStockCount.textContent = data.lowStockCount || 0;
+        lowStockCount.textContent = lowStockTypes;
     }
     
     const tbody = document.getElementById('inventoryBody');
@@ -400,6 +416,8 @@ function updateInventoryPage(data) {
         `;
         tbody.appendChild(row);
     });
+    
+    console.log('✅ Low stock types:', lowStockTypes);
 }
 
 // ============================================================
@@ -495,7 +513,7 @@ async function updateStock(change) {
             .eq('id', 1);
         
         console.log('✅ Stock updated to:', newStock);
-        fetchDashboardData();  // ✅ Calls the renamed main function
+        fetchDashboardData();
         
     } catch (error) {
         console.error('❌ Error:', error);
@@ -507,14 +525,11 @@ async function updateStock(change) {
 // ============================================================
 function refreshDataManually() {
     console.log('🔄 Manual refresh triggered');
-    // Clear existing interval
     if (updateInterval) {
         clearInterval(updateInterval);
         updateInterval = null;
     }
-    // Call the main fetch function
-    fetchDashboardData();  // ✅ Calls the renamed main function
-    // Restart interval
+    fetchDashboardData();
     updateInterval = setInterval(fetchDashboardData, 30000);
 }
 
@@ -531,9 +546,9 @@ function logout() {
 }
 
 // ============================================================
-// EXPOSE FUNCTIONS TO HTML (FIXED - NO RECURSION!)
+// EXPOSE FUNCTIONS TO HTML
 // ============================================================
-window.refreshData = refreshDataManually;  // ✅ HTML button calls this
+window.refreshData = refreshDataManually;
 window.logout = logout;
 window.filterAlerts = filterAlerts;
 window.updateStock = updateStock;
