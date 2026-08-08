@@ -1,4 +1,3 @@
-
 * {
     margin: 0;
     padding: 0;
@@ -103,7 +102,9 @@ body {
     color: #666;
 }
 
-/* ---------- NAVIGATION ---------- */
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
 .navbar {
     background: white;
     padding: 12px 30px;
@@ -170,14 +171,18 @@ body {
     color: white;
 }
 
-/* ---------- DASHBOARD ---------- */
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
 .dashboard {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
 
-/* ---------- ALERT BANNER ---------- */
+/* ============================================================
+   ALERT BANNER
+   ============================================================ */
 .alert-banner {
     padding: 14px 20px;
     border-radius: 12px;
@@ -217,7 +222,9 @@ body {
     50% { opacity: 0.7; }
 }
 
-/* ---------- STATS GRID ---------- */
+/* ============================================================
+   STATS GRID
+   ============================================================ */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -277,7 +284,9 @@ body {
 .door-card .stat-value.open { color: #e74c3c; }
 .door-card .stat-value.closed { color: #2ecc71; }
 
-/* ---------- SECTIONS ---------- */
+/* ============================================================
+   SECTIONS
+   ============================================================ */
 .section {
     background: white;
     padding: 20px;
@@ -291,39 +300,159 @@ body {
     font-size: 18px;
 }
 
-/* ---------- BLOOD GRID ---------- */
+/* ============================================================
+   BLOOD GRID (Color Coding)
+   ============================================================ */
 .blood-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    gap: 12px;
 }
 
-.blood-item {
-    padding: 10px 14px;
+.blood-card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-left: 5px solid #4CAF50;
+    transition: transform 0.2s;
+}
+
+.blood-card:hover {
+    transform: scale(1.02);
+}
+
+.blood-card h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.blood-card .quantity {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.blood-card .minimum {
+    font-size: 12px;
+    color: #999;
+}
+
+.blood-card.safe { border-left-color: #4CAF50; background: #f0fff4; }
+.blood-card.low { border-left-color: #FF9800; background: #fff8e1; }
+.blood-card.critical { border-left-color: #f44336; background: #ffebee; }
+
+/* Status Badge for Blood Cards */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+.status-badge.safe { background: #d4edda; color: #155724; }
+.status-badge.low { background: #fff3cd; color: #856404; }
+.status-badge.critical { background: #f8d7da; color: #721c24; }
+
+/* ============================================================
+   EXPIRY TABLE (NEW)
+   ============================================================ */
+.table-container {
+    overflow-x: auto;
+}
+
+#expiryTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+#expiryTable th {
     background: #f8f9fa;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid #eee;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #eee;
 }
 
-.blood-type {
-    font-weight: bold;
+#expiryTable td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
 }
 
-.dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+#expiryTable tr:hover {
+    background: #f8f9fa;
+}
+
+/* Expiry Badges */
+.expiry-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
     display: inline-block;
 }
 
-.dot.ok { background: #28a745; }
-.dot.warning { background: #ffc107; }
-.dot.critical { background: #dc3545; }
+.expiry-badge.safe { background: #d4edda; color: #155724; }
+.expiry-badge.warning { background: #fff3cd; color: #856404; }
+.expiry-badge.critical { background: #f8d7da; color: #721c24; }
+.expiry-badge.expired { background: #e2e3e5; color: #6c757d; }
 
-/* ---------- ACTION BUTTONS ---------- */
+/* ============================================================
+   RECENT ALERTS (NEW)
+   ============================================================ */
+.alerts-list {
+    margin-top: 10px;
+}
+
+.alert-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: #f8f9fa;
+    border-left: 4px solid #FF9800;
+}
+
+.alert-item.critical {
+    border-left-color: #f44336;
+    background: #ffebee;
+}
+
+.alert-item.warning {
+    border-left-color: #FF9800;
+    background: #fff8e1;
+}
+
+.alert-item .alert-icon {
+    font-size: 16px;
+}
+
+.alert-item .alert-message {
+    flex: 1;
+    font-size: 14px;
+}
+
+.alert-item .alert-time {
+    color: #999;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.no-alerts {
+    color: #28a745;
+    font-weight: 600;
+    padding: 10px;
+    text-align: center;
+}
+
+/* ============================================================
+   ACTION BUTTONS
+   ============================================================ */
 .action-buttons {
     display: flex;
     gap: 10px;
@@ -343,13 +472,20 @@ body {
 
 .action-btn:hover {
     transform: scale(1.03);
+    background: #5a6fd6;
 }
 
 .action-btn.danger {
     background: #dc3545;
 }
 
-/* ---------- INVENTORY ---------- */
+.action-btn.danger:hover {
+    background: #c82333;
+}
+
+/* ============================================================
+   INVENTORY PAGE
+   ============================================================ */
 .inventory-summary {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -394,18 +530,9 @@ body {
     border-bottom: 1px solid #eee;
 }
 
-.status-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.status-badge.OK { background: #d4edda; color: #155724; }
-.status-badge.LOW { background: #fff3cd; color: #856404; }
-.status-badge.CRITICAL { background: #f8d7da; color: #721c24; }
-
-/* ---------- ALERTS ---------- */
+/* ============================================================
+   ALERTS PAGE
+   ============================================================ */
 .alert-filters {
     display: flex;
     gap: 10px;
@@ -433,14 +560,6 @@ body {
     border-color: #667eea;
 }
 
-.alert-item {
-    padding: 14px 20px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
 .alert-item .alert-type {
     font-weight: bold;
     padding: 3px 12px;
@@ -462,12 +581,28 @@ body {
     font-size: 13px;
 }
 
-/* ---------- RESPONSIVE ---------- */
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #999;
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
 @media (max-width: 992px) {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
     .blood-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .inventory-summary {
         grid-template-columns: repeat(2, 1fr);
     }
 }
@@ -489,8 +624,24 @@ body {
     }
     .nav-links {
         justify-content: center;
+        flex-wrap: wrap;
     }
     .dashboard {
         padding: 10px;
+    }
+    .alert-item {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .alert-item .alert-time {
+        width: 100%;
+        text-align: right;
+    }
+    #expiryTable {
+        font-size: 12px;
+    }
+    #expiryTable th,
+    #expiryTable td {
+        padding: 6px 8px;
     }
 }
