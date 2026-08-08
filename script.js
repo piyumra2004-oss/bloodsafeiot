@@ -561,7 +561,15 @@ async function updateStock(change) {
 // ============================================================
 function refreshDataManually() {
     console.log('🔄 Manual refresh triggered');
-    refreshData(); // This is fine - it calls the main refreshData function
+    // Clear existing interval to prevent multiple refreshes
+    if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
+    }
+    // Call refresh directly
+    refreshData();
+    // Restart interval
+    updateInterval = setInterval(refreshData, 30000);
 }
 
 // ============================================================
