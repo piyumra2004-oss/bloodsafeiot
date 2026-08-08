@@ -501,11 +501,14 @@ async function updateStock(change) {
 // ============================================================
 function refreshDataManually() {
     console.log('🔄 Manual refresh triggered');
+    // Clear existing interval
     if (updateInterval) {
         clearInterval(updateInterval);
         updateInterval = null;
     }
+    // Call the MAIN refreshData function (NOT itself!)
     refreshData();
+    // Restart interval
     updateInterval = setInterval(refreshData, 30000);
 }
 
@@ -522,7 +525,7 @@ function logout() {
 }
 
 // ============================================================
-// EXPOSE FUNCTIONS TO HTML (FIXED - NO SPACES!)
+// EXPOSE FUNCTIONS TO HTML (FIXED - NO RECURSION!)
 // ============================================================
 window.refreshData = refreshDataManually;
 window.logout = logout;
