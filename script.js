@@ -33,9 +33,6 @@ async function refreshData() {
             console.error('❌ Sensor error:', sensorError);
         }
         
-        // ============================================================
-        // 2. FETCH INVENTORY DATA (BLOOD STOCK WITH EXPIRY)
-        // ============================================================
         const { data: inventoryData, error: inventoryError } = await sb
             .from('inventory')
             .select('*')
@@ -45,9 +42,6 @@ async function refreshData() {
             console.error('❌ Inventory error:', inventoryError);
         }
         
-        // ============================================================
-        // 3. FETCH ALERTS
-        // ============================================================
         const { data: alertData, error: alertError } = await sb
             .from('alerts')
             .select('*')
@@ -58,12 +52,8 @@ async function refreshData() {
             console.error('❌ Alert error:', alertError);
         }
         
-        // ============================================================
-        // BUILD DASHBOARD DATA
-        // ============================================================
         const latest = sensorData && sensorData.length > 0 ? sensorData[0] : {};
         
-        // Calculate stock and expiry from inventory
         let totalStock = 0;
         let nearExpiry = 0;
         let lowStockCount = 0;
@@ -74,9 +64,6 @@ async function refreshData() {
                 totalStock += item.quantity || 0;
                 if (item.days_until_expiry !== null && item.days_until_expiry <= 7 && item.days_until_expiry >= 0) {
                     nearExpiry++;
-                }
-                if (item.days_until_expiry !== null && item.days_until_expiry < 0) {
-                    // Expired
                 }
                 if (item.quantity < item.minimum_stock) {
                     lowStockCount++;
@@ -130,9 +117,6 @@ function updateCurrentPage(data) {
 function updateDashboard(data) {
     console.log('🖥️ Updating dashboard...');
     
-    // ============================================================
-    // 🌡️ TEMPERATURE
-    // ============================================================
     const temp = data.temperature;
     const tempDisplay = document.getElementById('tempDisplay');
     if (tempDisplay) tempDisplay.textContent = temp + '°C';
@@ -151,9 +135,6 @@ function updateDashboard(data) {
         }
     }
     
-    // ============================================================
-    // 💧 HUMIDITY
-    // ============================================================
     const humidityDisplay = document.getElementById('humidityDisplay');
     if (humidityDisplay) {
         humidityDisplay.textContent = (data.humidity || 0) + '%';
@@ -177,9 +158,6 @@ function updateDashboard(data) {
         }
     }
     
-    // ============================================================
-    // 📦 TOTAL STOCK (From Inventory Table)
-    // ============================================================
     const stockDisplay = document.getElementById('stockDisplay');
     if (stockDisplay) stockDisplay.textContent = data.stock;
     
@@ -194,9 +172,6 @@ function updateDashboard(data) {
         }
     }
     
-    // ============================================================
-    // ⏰ NEAR EXPIRY (From Inventory Table)
-    // ============================================================
     const expiryDisplay = document.getElementById('expiryDisplay');
     if (expiryDisplay) expiryDisplay.textContent = data.expiry || 0;
     
@@ -215,9 +190,6 @@ function updateDashboard(data) {
         }
     }
     
-    // ============================================================
-    // 🚪 DOOR STATUS
-    // ============================================================
     const doorDisplay = document.getElementById('doorDisplay');
     if (doorDisplay) {
         doorDisplay.textContent = data.door || 'Closed';
@@ -235,26 +207,17 @@ function updateDashboard(data) {
         }
     }
     
-    // ============================================================
-    // 📊 SYSTEM STATUS
-    // ============================================================
     const systemStatus = document.getElementById('systemStatus');
     if (systemStatus) {
         systemStatus.textContent = data.status || 'NORMAL';
         systemStatus.className = (data.status || 'normal').toLowerCase();
     }
     
-    // ============================================================
-    // 🕐 LAST UPDATE
-    // ============================================================
     const lastUpdate = document.getElementById('lastUpdate');
     if (lastUpdate) {
         lastUpdate.textContent = data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString() : '--';
     }
     
-    // ============================================================
-    // 🚨 ALERT BANNER
-    // ============================================================
     const banner = document.getElementById('alertBanner');
     if (banner) {
         if (data.temperature > 25) {
@@ -278,26 +241,15 @@ function updateDashboard(data) {
         }
     }
     
-    // ============================================================
-    // 🩸 BLOOD GRID (Color Coding)
-    // ============================================================
     updateBloodGrid(data.inventory);
-    
-    // ============================================================
-    // 📅 EXPIRY TABLE
-    // ============================================================
     updateExpiryTable(data.inventory);
-    
-    // ============================================================
-    // 🔔 RECENT ALERTS
-    // ============================================================
     updateRecentAlerts(data.alerts);
     
     console.log('✅ Dashboard updated!');
 }
 
 // ============================================================
-// 🩸 BLOOD GRID (With Color Coding)
+// 🩸 BLOOD GRID
 // ============================================================
 function updateBloodGrid(inventory) {
     const grid = document.getElementById('bloodGrid');
@@ -310,7 +262,6 @@ function updateBloodGrid(inventory) {
         return;
     }
     
-    // Sort by quantity ascending (critical first)
     const sorted = [...inventory].sort((a, b) => a.quantity - b.quantity);
     
     sorted.forEach(item => {
@@ -327,7 +278,6 @@ function updateBloodGrid(inventory) {
     });
 }
 
-// Helper: Get stock status with color coding
 function getStockStatus(quantity, minimum) {
     if (quantity < minimum) {
         return { class: 'critical', label: '🔴 CRITICAL' };
@@ -352,7 +302,6 @@ function updateExpiryTable(inventory) {
         return;
     }
     
-    // Sort by days_until_expiry (ascending)
     const sorted = [...inventory].sort((a, b) => {
         const daysA = a.days_until_expiry !== null ? a.days_until_expiry : 999;
         const daysB = b.days_until_expiry !== null ? b.days_until_expiry : 999;
@@ -374,7 +323,6 @@ function updateExpiryTable(inventory) {
     });
 }
 
-// Helper: Get expiry status with color coding
 function getExpiryStatus(days) {
     if (days === null || days === undefined) return { class: 'safe', label: 'N/A' };
     if (days < 0) return { class: 'expired', label: '❌ EXPIRED' };
@@ -416,19 +364,16 @@ function updateRecentAlerts(alerts) {
 function updateInventoryPage(data) {
     console.log('📋 Updating inventory page...');
     
-    // Total units
     const totalUnits = document.getElementById('totalUnits');
     if (totalUnits) {
         totalUnits.textContent = data.stock || 0;
     }
     
-    // Low stock count
     const lowStockCount = document.getElementById('lowStockCount');
     if (lowStockCount) {
         lowStockCount.textContent = data.lowStockCount || 0;
     }
     
-    // Inventory table
     const tbody = document.getElementById('inventoryBody');
     if (!tbody) return;
     
@@ -461,19 +406,16 @@ function updateAlertsPage(data) {
     const time = new Date().toLocaleTimeString();
     const alerts = [];
     
-    // Temperature alerts
     if (data.temperature > 25) {
         alerts.push({ type: 'CRITICAL', message: 'Temperature: ' + data.temperature + '°C', time: time });
     } else if (data.temperature < 15) {
         alerts.push({ type: 'WARNING', message: 'Temperature: ' + data.temperature + '°C (Below safe range)', time: time });
     }
     
-    // Door alerts
     if (data.door === 'Open') {
         alerts.push({ type: 'CRITICAL', message: 'Door is OPEN!', time: time });
     }
     
-    // Stock alerts from inventory
     if (data.inventory) {
         data.inventory.forEach(item => {
             if (item.quantity < item.minimum_stock) {
@@ -486,7 +428,6 @@ function updateAlertsPage(data) {
         });
     }
     
-    // Expiry alerts
     if (data.inventory) {
         data.inventory.forEach(item => {
             const days = item.days_until_expiry;
@@ -498,7 +439,6 @@ function updateAlertsPage(data) {
         });
     }
     
-    // If no alerts, add normal message
     if (alerts.length === 0) {
         alerts.push({ type: 'INFO', message: 'All systems normal', time: time });
     }
@@ -561,19 +501,16 @@ async function updateStock(change) {
 // ============================================================
 function refreshDataManually() {
     console.log('🔄 Manual refresh triggered');
-    // Clear existing interval to prevent multiple refreshes
     if (updateInterval) {
         clearInterval(updateInterval);
         updateInterval = null;
     }
-    // Call refresh directly
     refreshData();
-    // Restart interval
     updateInterval = setInterval(refreshData, 30000);
 }
 
 // ============================================================
-// LOGOUT (FIXED - Clear interval properly)
+// LOGOUT (FIXED)
 // ============================================================
 function logout() {
     localStorage.removeItem('user');
@@ -585,7 +522,7 @@ function logout() {
 }
 
 // ============================================================
-// EXPOSE FUNCTIONS TO HTML (FIXED - Don't point to itself)
+// EXPOSE FUNCTIONS TO HTML (FIXED - NO SPACES!)
 // ============================================================
 window.refreshData = refreshDataManually;
 window.logout = logout;
