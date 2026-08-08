@@ -1,5 +1,8 @@
 let updateInterval = null;
 
+// ============================================================
+// PAGE LOAD
+// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔄 Page loaded');
     
@@ -15,11 +18,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     console.log('👤 User:', user.username);
     
-    refreshData();
-    updateInterval = setInterval(refreshData, 30000);
+    fetchDashboardData();
+    updateInterval = setInterval(fetchDashboardData, 30000);
 });
 
-async function refreshData() {
+// ============================================================
+// MAIN FETCH FUNCTION (Renamed to avoid recursion)
+// ============================================================
+async function fetchDashboardData() {
     try {
         console.log('📡 Fetching data from Supabase...');
         
@@ -489,7 +495,7 @@ async function updateStock(change) {
             .eq('id', 1);
         
         console.log('✅ Stock updated to:', newStock);
-        refreshData();
+        fetchDashboardData();  // ✅ Calls the renamed main function
         
     } catch (error) {
         console.error('❌ Error:', error);
@@ -506,10 +512,10 @@ function refreshDataManually() {
         clearInterval(updateInterval);
         updateInterval = null;
     }
-    // Call the MAIN refreshData function (NOT itself!)
-    refreshData();
+    // Call the main fetch function
+    fetchDashboardData();  // ✅ Calls the renamed main function
     // Restart interval
-    updateInterval = setInterval(refreshData, 30000);
+    updateInterval = setInterval(fetchDashboardData, 30000);
 }
 
 // ============================================================
@@ -527,7 +533,7 @@ function logout() {
 // ============================================================
 // EXPOSE FUNCTIONS TO HTML (FIXED - NO RECURSION!)
 // ============================================================
-window.refreshData = refreshDataManually;
+window.refreshData = refreshDataManually;  // ✅ HTML button calls this
 window.logout = logout;
 window.filterAlerts = filterAlerts;
 window.updateStock = updateStock;
