@@ -557,23 +557,27 @@ async function updateStock(change) {
 }
 
 // ============================================================
-// REFRESH BUTTON
+// REFRESH BUTTON (FIXED - No Recursion)
 // ============================================================
 function refreshDataManually() {
-    refreshData();
+    console.log('🔄 Manual refresh triggered');
+    refreshData(); // This is fine - it calls the main refreshData function
 }
 
 // ============================================================
-// LOGOUT
+// LOGOUT (FIXED - Clear interval properly)
 // ============================================================
 function logout() {
     localStorage.removeItem('user');
-    clearInterval(updateInterval);
+    if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
+    }
     window.location.href = 'login.html';
 }
 
 // ============================================================
-// EXPOSE FUNCTIONS TO HTML
+// EXPOSE FUNCTIONS TO HTML (FIXED - Don't point to itself)
 // ============================================================
 window.refreshData = refreshDataManually;
 window.logout = logout;
