@@ -11,6 +11,9 @@ body {
     min-height: 100vh;
 }
 
+/* ============================================================
+   LOGIN
+   ============================================================ */
 .login-container {
     display: flex;
     justify-content: center;
@@ -125,11 +128,39 @@ body {
     color: #667eea;
 }
 
+/* ============================================================
+   HAMBURGER MENU (Mobile)
+   ============================================================ */
+.hamburger {
+    display: none;
+    background: none;
+    border: 2px solid #667eea;
+    border-radius: 6px;
+    font-size: 28px;
+    color: #333;
+    cursor: pointer;
+    padding: 6px 14px;
+    transition: all 0.3s ease;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+.hamburger:hover {
+    background: #667eea;
+    color: white;
+}
+
+.hamburger.active {
+    background: #667eea;
+    color: white;
+}
+
 .nav-links {
     display: flex;
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+    transition: all 0.3s ease;
 }
 
 .nav-links a {
@@ -357,7 +388,7 @@ body {
 .status-badge.critical { background: #f8d7da; color: #721c24; }
 
 /* ============================================================
-   EXPIRY TABLE (NEW)
+   EXPIRY TABLE
    ============================================================ */
 .table-container {
     overflow-x: auto;
@@ -401,7 +432,7 @@ body {
 .expiry-badge.expired { background: #e2e3e5; color: #6c757d; }
 
 /* ============================================================
-   RECENT ALERTS (NEW)
+   RECENT ALERTS
    ============================================================ */
 .alerts-list {
     margin-top: 10px;
@@ -593,7 +624,403 @@ footer {
 }
 
 /* ============================================================
-   RESPONSIVE
+   ============================================================
+   MOBILE-RESPONSIVE ENHANCEMENTS - ITERATION 3
+   ============================================================
+   ============================================================ */
+
+/* ============================================================
+   1. TABLET SCREEN (768px and below)
+   ============================================================ */
+@media (max-width: 768px) {
+    /* NAVBAR */
+    .navbar {
+        flex-wrap: wrap;
+        padding: 10px 16px;
+        gap: 8px;
+    }
+
+    .nav-brand {
+        font-size: 18px;
+        flex: 1;
+    }
+
+    /* HAMBURGER - Show on mobile */
+    .hamburger {
+        display: block;
+        order: 2;
+    }
+
+    /* NAV LINKS - Hidden by default, shown when hamburger clicked */
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        gap: 6px;
+        padding: 12px 0;
+        border-top: 2px solid #eee;
+        margin-top: 8px;
+        order: 3;
+    }
+
+    .nav-links.active {
+        display: flex;
+        animation: slideDown 0.3s ease;
+    }
+
+    /* Mobile Navigation Links - Improved touch targets */
+    .nav-links a {
+        padding: 12px 16px;
+        width: 100%;
+        text-align: left;
+        font-size: 16px;
+        border-radius: 8px;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-links a:hover {
+        background: #f0f4ff;
+    }
+
+    .user-badge {
+        padding: 12px 16px;
+        width: 100%;
+        text-align: left;
+        font-size: 14px;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+    }
+
+    .logout-btn {
+        width: 100%;
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 14px;
+        min-height: 48px;
+        border-radius: 8px;
+        margin-top: 4px;
+    }
+
+    /* STATS GRID - 2 columns on tablet */
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .stat-card {
+        padding: 14px 12px;
+    }
+
+    .stat-icon {
+        font-size: 22px;
+    }
+
+    .stat-value {
+        font-size: 22px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+    }
+
+    /* BLOOD GRID - 4 columns on tablet */
+    .blood-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+
+    .blood-card {
+        padding: 10px 8px;
+    }
+
+    .blood-card h3 {
+        font-size: 14px;
+    }
+
+    .blood-card .quantity {
+        font-size: 18px;
+    }
+
+    .blood-card .minimum {
+        font-size: 10px;
+    }
+
+    .status-badge {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+
+    /* TABLES - Horizontal scroll for small screens */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -6px;
+        padding: 0 6px;
+    }
+
+    #expiryTable,
+    .inventory-table {
+        font-size: 12px;
+        min-width: 500px;
+    }
+
+    #expiryTable th,
+    #expiryTable td,
+    .inventory-table th,
+    .inventory-table td {
+        padding: 8px 6px;
+        font-size: 12px;
+    }
+
+    /* ALERT ITEMS - Stack on mobile */
+    .alert-item {
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 12px 14px;
+        min-height: 56px;
+        border-radius: 8px;
+    }
+
+    .alert-item .alert-icon {
+        font-size: 18px;
+        width: 24px;
+    }
+
+    .alert-item .alert-message {
+        width: 100%;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .alert-item .alert-time {
+        font-size: 11px;
+        color: #999;
+        width: 100%;
+        text-align: left;
+    }
+
+    /* ACTION BUTTONS - Full width on mobile */
+    .action-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .action-btn {
+        width: 100%;
+        text-align: center;
+        padding: 14px;
+        min-height: 48px;
+        font-size: 15px;
+        border-radius: 8px;
+    }
+
+    /* SECTION PADDING */
+    .section {
+        padding: 14px 12px;
+        margin-bottom: 14px;
+    }
+
+    .section h2 {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .dashboard {
+        padding: 10px;
+    }
+
+    /* ALERT BANNER */
+    .alert-banner {
+        font-size: 13px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        margin-bottom: 14px;
+    }
+
+    /* INVENTORY SUMMARY CARDS */
+    .inventory-summary {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+    }
+
+    .summary-card {
+        padding: 14px 10px;
+    }
+
+    .summary-card h3 {
+        font-size: 12px;
+    }
+
+    .summary-card p {
+        font-size: 20px;
+    }
+
+    /* IMPROVED TOUCH TARGETS - All interactive elements min 44px */
+    button,
+    .action-btn,
+    .filter-btn,
+    .nav-links a,
+    .logout-btn,
+    .status-badge,
+    .hamburger,
+    input[type="button"],
+    .acknowledge-btn,
+    .refresh-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .filter-btn {
+        padding: 10px 16px;
+        font-size: 13px;
+        border-radius: 20px;
+    }
+
+    /* Table rows become tappable */
+    .inventory-table tbody tr,
+    #expiryTable tbody tr {
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .inventory-table tbody tr:active,
+    #expiryTable tbody tr:active {
+        background: #f0f4ff;
+    }
+}
+
+/* ============================================================
+   2. SMALL MOBILE (480px and below)
+   ============================================================ */
+@media (max-width: 480px) {
+    /* Single column stats */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    /* Blood grid - 2 columns on small phones */
+    .blood-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    /* Inventory summary - single column */
+    .inventory-summary {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    /* Smaller padding */
+    .dashboard {
+        padding: 8px;
+    }
+
+    .section {
+        padding: 12px 10px;
+    }
+
+    .stat-card {
+        padding: 12px 10px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+
+    /* Smaller blood cards */
+    .blood-card {
+        padding: 8px 6px;
+    }
+
+    .blood-card h3 {
+        font-size: 13px;
+    }
+
+    .blood-card .quantity {
+        font-size: 16px;
+    }
+
+    /* Full width alert items */
+    .alert-item {
+        padding: 10px 12px;
+    }
+
+    .alert-item .alert-message {
+        font-size: 13px;
+    }
+
+    /* Smaller navigation */
+    .nav-brand {
+        font-size: 16px;
+    }
+
+    .hamburger {
+        font-size: 24px;
+        padding: 4px 12px;
+        min-height: 40px;
+        min-width: 40px;
+    }
+
+    .nav-links a,
+    .user-badge,
+    .logout-btn {
+        padding: 10px 14px;
+        font-size: 14px;
+        min-height: 44px;
+    }
+
+    /* Alert banner */
+    .alert-banner {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    /* Buttons */
+    .action-btn {
+        padding: 12px;
+        font-size: 14px;
+        min-height: 44px;
+    }
+
+    /* Filter buttons on alerts page */
+    .filter-btn {
+        padding: 8px 14px;
+        font-size: 12px;
+        min-height: 36px;
+    }
+
+    .alert-filters {
+        gap: 6px;
+    }
+}
+
+/* ============================================================
+   3. MENU ANIMATION
+   ============================================================ */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hamburger animation */
+.hamburger.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+/* ============================================================
+   4. TABLET LANDSCAPE (992px and below) - Improved
    ============================================================ */
 @media (max-width: 992px) {
     .stats-grid {
@@ -607,41 +1034,22 @@ footer {
     }
 }
 
-@media (max-width: 600px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
+/* ============================================================
+   5. PRINT STYLES
+   ============================================================ */
+@media print {
+    .navbar,
+    .action-buttons,
+    .hamburger {
+        display: none !important;
     }
-    .blood-grid {
-        grid-template-columns: 1fr;
+    .stat-card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
     }
-    .inventory-summary {
-        grid-template-columns: 1fr;
-    }
-    .navbar {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 12px;
-    }
-    .nav-links {
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-    .dashboard {
-        padding: 10px;
-    }
-    .alert-item {
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-    .alert-item .alert-time {
-        width: 100%;
-        text-align: right;
-    }
-    #expiryTable {
-        font-size: 12px;
-    }
-    #expiryTable th,
-    #expiryTable td {
-        padding: 6px 8px;
+    .section {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        page-break-inside: avoid;
     }
 }
