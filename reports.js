@@ -1,14 +1,12 @@
 // ============================================================
-// REPORTS.JS - ENHANCED REPORT GENERATION (FIXED)
+// REPORTS.JS - ENHANCED REPORT GENERATION (WORKING)
 // ============================================================
 
-// Helper function to safely access supabase
-function getSupabase() {
-    if (typeof supabase === 'undefined') {
-        console.error('❌ Supabase client not found! Make sure supabase-config.js is loaded first.');
-        return null;
-    }
-    return supabase;
+// Check if supabase client exists
+if (typeof supabase === 'undefined') {
+    console.error('❌ Supabase client not found!');
+} else {
+    console.log('✅ Supabase client found in reports.js');
 }
 
 // ============================================================
@@ -65,14 +63,12 @@ async function generateReport() {
 }
 
 // ============================================================
-// REPORT DATA FETCHING FUNCTIONS (FIXED - using getSupabase)
+// REPORT DATA FETCHING FUNCTIONS (DIRECT - NO HELPER)
 // ============================================================
 
 async function getInventoryReport() {
-    const sb = getSupabase();
-    if (!sb) return [];
-    
-    const { data, error } = await sb
+    // ✅ Use global supabase directly
+    const { data, error } = await supabase
         .from('inventory')
         .select('*')
         .order('blood_group');
@@ -82,9 +78,6 @@ async function getInventoryReport() {
 }
 
 async function getAlertsReport(dateRange) {
-    const sb = getSupabase();
-    if (!sb) return [];
-    
     let startDate = new Date();
     switch(dateRange) {
         case 'today': startDate.setHours(0,0,0,0); break;
@@ -93,7 +86,7 @@ async function getAlertsReport(dateRange) {
         default: startDate = null;
     }
     
-    let query = sb.from('alerts').select('*').order('created_at', { ascending: false });
+    let query = supabase.from('alerts').select('*').order('created_at', { ascending: false });
     if (startDate) {
         query = query.gte('created_at', startDate.toISOString());
     }
@@ -104,9 +97,6 @@ async function getAlertsReport(dateRange) {
 }
 
 async function getTemperatureReport(dateRange) {
-    const sb = getSupabase();
-    if (!sb) return [];
-    
     let startDate = new Date();
     switch(dateRange) {
         case 'today': startDate.setHours(0,0,0,0); break;
@@ -115,7 +105,7 @@ async function getTemperatureReport(dateRange) {
         default: startDate = null;
     }
     
-    let query = sb.from('sensors').select('*').order('created_at', { ascending: false }).limit(100);
+    let query = supabase.from('sensors').select('*').order('created_at', { ascending: false }).limit(100);
     if (startDate) {
         query = query.gte('created_at', startDate.toISOString());
     }
@@ -126,10 +116,7 @@ async function getTemperatureReport(dateRange) {
 }
 
 async function getWastageReport() {
-    const sb = getSupabase();
-    if (!sb) return [];
-    
-    const { data, error } = await sb
+    const { data, error } = await supabase
         .from('alerts')
         .select('*')
         .eq('type', 'EXPIRY')
@@ -140,13 +127,10 @@ async function getWastageReport() {
 }
 
 async function getFullReport() {
-    const sb = getSupabase();
-    if (!sb) return { inventory: [], alerts: [], sensors: [] };
-    
     const [inventory, alerts, sensors] = await Promise.all([
-        sb.from('inventory').select('*'),
-        sb.from('alerts').select('*').order('created_at', { ascending: false }).limit(50),
-        sb.from('sensors').select('*').order('created_at', { ascending: false }).limit(20)
+        supabase.from('inventory').select('*'),
+        supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('sensors').select('*').order('created_at', { ascending: false }).limit(20)
     ]);
     
     return {
@@ -236,7 +220,7 @@ function renderAlertsReport(data) {
             <tbody>
     `;
     
-    data.forEach(item => {
+    data.slice(0, 50).forEach(item => {
         const date = new Date(item.created_at).toLocaleString();
         const status = item.is_read ? 'Read' : 'Unread';
         html += `
@@ -320,7 +304,7 @@ function renderWastageReport(data) {
             <tbody>
     `;
     
-    data.forEach(item => {
+    data.slice(0, 50).forEach(item => {
         const date = new Date(item.created_at).toLocaleString();
         html += `
             <tr>
@@ -536,23 +520,17 @@ function closeScheduleModal() {
 }
 
 async function saveSchedule() {
-    const sb = getSupabase();
-    if (!sb) {
-        alert('❌ Supabase client not available.');
-        return;
-    }
-    
-    const reportType = document.getElementById('scheduleReportType')?.value;
-    const frequency = document.getElementById('scheduleFrequency')?.value;
-    const recipients = document.getElementById('scheduleRecipients')?.value;
-    
-    if (!reportType || !frequency) {
-        alert('Please fill in all required fields.');
-        return;
-    }
-    
     try {
-        const { error } = await sb
+        const reportType = document.getElementById('scheduleReportType')?.value;
+        const frequency = document.getElementById('scheduleFrequency')?.value;
+        const recipients = document.getElementById('scheduleRecipients')?.value;
+        
+        if (!reportType || !frequency) {
+            alert('Please fill in all required fields.');
+            return;
+        }
+        
+        const { error } = await supabase
             .from('scheduled_reports')
             .insert({
                 report_type: reportType,
@@ -574,11 +552,8 @@ async function saveSchedule() {
 }
 
 async function loadScheduledReports() {
-    const sb = getSupabase();
-    if (!sb) return;
-    
     try {
-        const { data, error } = await sb
+        const { data, error } = await supabase
             .from('scheduled_reports')
             .select('*')
             .order('created_at', { ascending: false });
