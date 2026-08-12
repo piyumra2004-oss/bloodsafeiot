@@ -11,16 +11,17 @@
     NAVIGATION
     ============================================ -->
     <nav class="navbar">
-        <div class="nav-brand">🩸 BloodSafe IoT</div>
-        <div class="nav-links">
-            <a href="index.html" class="active">Dashboard</a>
-            <a href="inventory.html">Inventory</a>
-            <a href="alerts.html">Alerts</a>
-            <a href="reports.html">Reports</a>
-            <span id="userDisplay" class="user-badge">👤 Officer</span>
-            <button onclick="logout()" class="logout-btn">Logout</button>
-        </div>
-    </nav>
+    <div class="nav-brand">🩸 BloodSafe IoT</div>
+    <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu">☰</button>
+    <div class="nav-links" id="navLinks">
+        <a href="index.html" class="active">Dashboard</a>
+        <a href="inventory.html">Inventory</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="reports.html">Reports</a>
+        <span id="userDisplay" class="user-badge">👤 Officer</span>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+    </div>
+</nav>
 
     <!-- ============================================
     MAIN DASHBOARD
