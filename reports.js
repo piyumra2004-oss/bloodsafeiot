@@ -1,23 +1,29 @@
-
-
-// Check if supabase client exists
-if (typeof supabase === 'undefined') {
-    console.error('❌ Supabase client not found! Make sure supabase-config.js is loaded first.');
-}
+// ============================================================
+// REPORTS.JS - ENHANCED REPORT GENERATION (FIXED)
+// ============================================================
 
 // Helper function to safely access supabase
 function getSupabase() {
     if (typeof supabase === 'undefined') {
-        console.error('❌ Supabase client not available');
+        console.error('❌ Supabase client not found! Make sure supabase-config.js is loaded first.');
         return null;
     }
     return supabase;
 }
-// Load report data
+
+// ============================================================
+// GENERATE REPORT
+// ============================================================
+
 async function generateReport() {
-    const reportType = document.getElementById('reportType').value;
-    const dateRange = document.getElementById('dateRange').value;
+    const reportType = document.getElementById('reportType')?.value || 'inventory';
+    const dateRange = document.getElementById('dateRange')?.value || 'week';
     const previewDiv = document.getElementById('reportPreview');
+    
+    if (!previewDiv) {
+        console.error('❌ reportPreview element not found');
+        return;
+    }
     
     previewDiv.innerHTML = '<p>⏳ Generating report...</p>';
     
@@ -46,30 +52,39 @@ async function generateReport() {
                 data = await getFullReport();
                 html = renderFullReport(data);
                 break;
+            default:
+                html = '<p>Unknown report type.</p>';
         }
         
-        previewDiv.innerHTML = html;
+        previewDiv.innerHTML = html || '<p>No data available for this report.</p>';
         
     } catch (error) {
         previewDiv.innerHTML = `<p style="color:red;">❌ Error: ${error.message}</p>`;
+        console.error('❌ Report generation error:', error);
     }
 }
 
 // ============================================================
-// REPORT DATA FETCHING FUNCTIONS
+// REPORT DATA FETCHING FUNCTIONS (FIXED - using getSupabase)
 // ============================================================
 
 async function getInventoryReport() {
-    const { data, error } = await supabase
+    const sb = getSupabase();
+    if (!sb) return [];
+    
+    const { data, error } = await sb
         .from('inventory')
         .select('*')
         .order('blood_group');
     
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 async function getAlertsReport(dateRange) {
+    const sb = getSupabase();
+    if (!sb) return [];
+    
     let startDate = new Date();
     switch(dateRange) {
         case 'today': startDate.setHours(0,0,0,0); break;
@@ -78,17 +93,20 @@ async function getAlertsReport(dateRange) {
         default: startDate = null;
     }
     
-    let query = supabase.from('alerts').select('*').order('created_at', { ascending: false });
+    let query = sb.from('alerts').select('*').order('created_at', { ascending: false });
     if (startDate) {
         query = query.gte('created_at', startDate.toISOString());
     }
     
     const { data, error } = await query;
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 async function getTemperatureReport(dateRange) {
+    const sb = getSupabase();
+    if (!sb) return [];
+    
     let startDate = new Date();
     switch(dateRange) {
         case 'today': startDate.setHours(0,0,0,0); break;
@@ -97,38 +115,44 @@ async function getTemperatureReport(dateRange) {
         default: startDate = null;
     }
     
-    let query = supabase.from('sensors').select('*').order('created_at', { ascending: false }).limit(100);
+    let query = sb.from('sensors').select('*').order('created_at', { ascending: false }).limit(100);
     if (startDate) {
         query = query.gte('created_at', startDate.toISOString());
     }
     
     const { data, error } = await query;
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 async function getWastageReport() {
-    const { data, error } = await supabase
+    const sb = getSupabase();
+    if (!sb) return [];
+    
+    const { data, error } = await sb
         .from('alerts')
         .select('*')
         .eq('type', 'EXPIRY')
         .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 async function getFullReport() {
+    const sb = getSupabase();
+    if (!sb) return { inventory: [], alerts: [], sensors: [] };
+    
     const [inventory, alerts, sensors] = await Promise.all([
-        supabase.from('inventory').select('*'),
-        supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(50),
-        supabase.from('sensors').select('*').order('created_at', { ascending: false }).limit(20)
+        sb.from('inventory').select('*'),
+        sb.from('alerts').select('*').order('created_at', { ascending: false }).limit(50),
+        sb.from('sensors').select('*').order('created_at', { ascending: false }).limit(20)
     ]);
     
     return {
-        inventory: inventory.data,
-        alerts: alerts.data,
-        sensors: sensors.data
+        inventory: inventory.data || [],
+        alerts: alerts.data || [],
+        sensors: sensors.data || []
     };
 }
 
@@ -137,6 +161,10 @@ async function getFullReport() {
 // ============================================================
 
 function renderInventoryReport(data) {
+    if (!data || data.length === 0) {
+        return '<p>No inventory data available.</p>';
+    }
+    
     let totalUnits = 0;
     let lowStockCount = 0;
     
@@ -185,6 +213,10 @@ function renderInventoryReport(data) {
 }
 
 function renderAlertsReport(data) {
+    if (!data || data.length === 0) {
+        return '<p>No alerts data available.</p>';
+    }
+    
     let html = `
         <div class="report-header">
             <h3>🔔 Alerts Report</h3>
@@ -223,6 +255,10 @@ function renderAlertsReport(data) {
 }
 
 function renderTemperatureReport(data) {
+    if (!data || data.length === 0) {
+        return '<p>No temperature data available.</p>';
+    }
+    
     let avgTemp = 0;
     data.forEach(item => avgTemp += item.temperature);
     avgTemp = data.length > 0 ? (avgTemp / data.length).toFixed(1) : 'N/A';
@@ -262,6 +298,10 @@ function renderTemperatureReport(data) {
 }
 
 function renderWastageReport(data) {
+    if (!data || data.length === 0) {
+        return '<p>No wastage data available.</p>';
+    }
+    
     let html = `
         <div class="report-header">
             <h3>🗑️ Wastage Analysis</h3>
@@ -297,6 +337,10 @@ function renderWastageReport(data) {
 }
 
 function renderFullReport(data) {
+    if (!data || !data.inventory) {
+        return '<p>No data available.</p>';
+    }
+    
     let totalStock = 0;
     data.inventory.forEach(item => totalStock += item.quantity || 0);
     
@@ -305,8 +349,8 @@ function renderFullReport(data) {
             <h3>📊 Full System Report</h3>
             <p>Generated: ${new Date().toLocaleString()}</p>
             <p>Total Stock: ${totalStock} | Blood Types: ${data.inventory.length}</p>
-            <p>Total Alerts: ${data.alerts.length}</p>
-            <p>Latest Temperature: ${data.sensors[0]?.temperature || 'N/A'}°C</p>
+            <p>Total Alerts: ${data.alerts ? data.alerts.length : 0}</p>
+            <p>Latest Temperature: ${data.sensors && data.sensors[0] ? data.sensors[0].temperature : 'N/A'}°C</p>
         </div>
     `;
     
@@ -326,9 +370,21 @@ function renderFullReport(data) {
 // ============================================================
 
 function exportReport(format) {
-    const content = document.getElementById('reportPreview').innerHTML;
-    const title = document.querySelector('.report-header h3')?.textContent || 'Report';
+    const previewDiv = document.getElementById('reportPreview');
+    if (!previewDiv) {
+        alert('Report preview not found.');
+        return;
+    }
+    
+    const content = previewDiv.innerHTML;
+    const titleElement = document.querySelector('.report-header h3');
+    const title = titleElement ? titleElement.textContent : 'Report';
     const date = new Date().toISOString().split('T')[0];
+    
+    if (!content || content.includes('No data') || content.includes('Generating report')) {
+        alert('Please generate a report first.');
+        return;
+    }
     
     switch(format) {
         case 'pdf':
@@ -340,6 +396,8 @@ function exportReport(format) {
         case 'json':
             exportJSON(content, title, date);
             break;
+        default:
+            alert('Unknown export format.');
     }
 }
 
@@ -368,15 +426,18 @@ function exportPDF(content, title) {
         </html>
     `;
     
-    // Use window.print for PDF
     const win = window.open('', '_blank');
-    win.document.write(html);
-    win.document.close();
-    win.print();
+    if (win) {
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+        win.print();
+    } else {
+        alert('Please allow popups to export PDF.');
+    }
 }
 
 function exportExcel(content, title, date) {
-    // Extract table data
     const table = document.querySelector('.report-table');
     if (!table) {
         alert('No table data to export. Please generate a report first.');
@@ -397,7 +458,6 @@ function exportExcel(content, title, date) {
         const cells = row.querySelectorAll('td');
         const rowData = [];
         cells.forEach(td => {
-            // Clean text
             let text = td.textContent.trim().replace(/,/g, ';');
             rowData.push(text);
         });
@@ -408,13 +468,12 @@ function exportExcel(content, title, date) {
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${title}_${date}.csv`;
+    link.download = `${title.replace(/\s/g, '_')}_${date}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
 }
 
 function exportJSON(content, title, date) {
-    // Extract data from table
     const table = document.querySelector('.report-table');
     if (!table) {
         alert('No data to export. Please generate a report first.');
@@ -444,11 +503,10 @@ function exportJSON(content, title, date) {
         data: data
     };
     
-    // Download
     const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${title}_${date}.json`;
+    link.download = `${title.replace(/\s/g, '_')}_${date}.json`;
     link.click();
     URL.revokeObjectURL(link.href);
 }
@@ -462,25 +520,44 @@ function printReport() {
 // ============================================================
 
 function showScheduleModal() {
-    document.getElementById('scheduleModal').style.display = 'flex';
+    const modal = document.getElementById('scheduleModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    } else {
+        alert('Schedule modal not found.');
+    }
 }
 
 function closeScheduleModal() {
-    document.getElementById('scheduleModal').style.display = 'none';
+    const modal = document.getElementById('scheduleModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 async function saveSchedule() {
-    const reportType = document.getElementById('scheduleReportType').value;
-    const frequency = document.getElementById('scheduleFrequency').value;
-    const recipients = document.getElementById('scheduleRecipients').value;
+    const sb = getSupabase();
+    if (!sb) {
+        alert('❌ Supabase client not available.');
+        return;
+    }
+    
+    const reportType = document.getElementById('scheduleReportType')?.value;
+    const frequency = document.getElementById('scheduleFrequency')?.value;
+    const recipients = document.getElementById('scheduleRecipients')?.value;
+    
+    if (!reportType || !frequency) {
+        alert('Please fill in all required fields.');
+        return;
+    }
     
     try {
-        const { error } = await supabase
+        const { error } = await sb
             .from('scheduled_reports')
             .insert({
                 report_type: reportType,
                 frequency: frequency,
-                recipients: recipients,
+                recipients: recipients || '',
                 created_at: new Date().toISOString()
             });
         
@@ -492,48 +569,70 @@ async function saveSchedule() {
         
     } catch (error) {
         alert('❌ Error scheduling report: ' + error.message);
+        console.error('❌ Schedule error:', error);
     }
 }
 
 async function loadScheduledReports() {
-    const { data, error } = await supabase
-        .from('scheduled_reports')
-        .select('*')
-        .order('created_at', { ascending: false });
+    const sb = getSupabase();
+    if (!sb) return;
     
-    if (error) return;
-    
-    const container = document.getElementById('scheduledReportsList');
-    if (!data || data.length === 0) {
-        container.innerHTML = '<p>No scheduled reports configured.</p>';
-        return;
+    try {
+        const { data, error } = await sb
+            .from('scheduled_reports')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const container = document.getElementById('scheduledReportsList');
+        if (!container) return;
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p>No scheduled reports configured.</p>';
+            return;
+        }
+        
+        let html = '<table class="report-table"><thead><tr><th>Report Type</th><th>Frequency</th><th>Recipients</th><th>Created</th></tr></thead><tbody>';
+        data.forEach(item => {
+            html += `
+                <tr>
+                    <td>${item.report_type}</td>
+                    <td>${item.frequency}</td>
+                    <td>${item.recipients || 'N/A'}</td>
+                    <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                </tr>
+            `;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error loading scheduled reports:', error);
     }
-    
-    let html = '<table class="report-table"><thead><tr><th>Report Type</th><th>Frequency</th><th>Recipients</th><th>Created</th></tr></thead><tbody>';
-    data.forEach(item => {
-        html += `
-            <tr>
-                <td>${item.report_type}</td>
-                <td>${item.frequency}</td>
-                <td>${item.recipients}</td>
-                <td>${new Date(item.created_at).toLocaleDateString()}</td>
-            </tr>
-        `;
-    });
-    html += '</tbody></table>';
-    container.innerHTML = html;
 }
 
-// Auto-generate report on page load
+// ============================================================
+// INITIALIZE ON PAGE LOAD
+// ============================================================
+
 document.addEventListener('DOMContentLoaded', function() {
-    generateReport();
-    loadScheduledReports();
+    // Check if we're on the reports page
+    if (document.getElementById('reportPreview')) {
+        console.log('📊 Reports page loaded');
+        generateReport();
+        loadScheduledReports();
+    }
 });
 
-// Export functions globally
+// ============================================================
+// EXPOSE FUNCTIONS GLOBALLY
+// ============================================================
+
 window.generateReport = generateReport;
 window.exportReport = exportReport;
 window.printReport = printReport;
 window.showScheduleModal = showScheduleModal;
 window.closeScheduleModal = closeScheduleModal;
 window.saveSchedule = saveSchedule;
+window.scheduleReport = showScheduleModal; // Alias for HTML button
