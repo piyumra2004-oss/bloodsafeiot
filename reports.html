@@ -2,456 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BloodSafe IoT - Reports</title>
     <link rel="stylesheet" href="style.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
-    </script>
-    <style>
-        .chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-            margin: 10px 0;
-        }
-        .chart-wrapper {
-            background: white;
-            padding: 24px;
-            border-radius: 14px;
-            border: 1px solid #eef2f6;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-            margin-bottom: 24px;
-        }
-        .chart-wrapper h3 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1a1a2e;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .chart-wrapper h3 .badge {
-            font-size: 11px;
-            font-weight: 500;
-            color: #6b7280;
-            background: #f3f4f6;
-            padding: 2px 12px;
-            border-radius: 12px;
-        }
-        .summary-stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .summary-stat {
-            background: white;
-            padding: 18px 20px;
-            border-radius: 14px;
-            border: 1px solid #eef2f6;
-            text-align: center;
-        }
-        .summary-stat .label {
-            font-size: 12px;
-            color: #6b7280;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        .summary-stat .value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-top: 4px;
-        }
-        .summary-stat .value.temp { color: #3b82f6; }
-        .summary-stat .value.stock { color: #10b981; }
-        .summary-stat .value.expiry { color: #f59e0b; }
-        .summary-stat .value.status { color: #8b5cf6; }
-        .action-btn {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-            background: #667eea;
-            color: white;
-        }
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
-        }
-        .action-btn.secondary {
-            background: #f3f4f6;
-            color: #6b7280;
-        }
-        .action-btn.secondary:hover {
-            background: #e5e7eb;
-            box-shadow: none;
-        }
-        @media (max-width: 768px) {
-            .summary-stats { grid-template-columns: repeat(2, 1fr); }
-            .chart-container { height: 220px; }
-        }
-        @media (max-width: 480px) {
-            .summary-stats { grid-template-columns: 1fr; }
-        }
-    </style>
 </head>
 <body>
-
     <nav class="navbar">
-    <div class="nav-brand">🩸 BloodSafe IoT</div>
-    <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu">☰</button>
-    <div class="nav-links" id="navLinks">
-        <a href="index.html" class="active">Dashboard</a>
-        <a href="inventory.html">Inventory</a>
-        <a href="alerts.html">Alerts</a>
-        <a href="reports.html">Reports</a>
-        <span id="userDisplay" class="user-badge">👤 Officer</span>
-        <button onclick="logout()" class="logout-btn">Logout</button>
-    </div>
-</nav>
-
+        <div class="nav-brand">🩸 BloodSafe IoT</div>
+        <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
+        <div class="nav-links" id="navLinks">
+            <a href="index.html">Dashboard</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="alerts.html">Alerts</a>
+            <a href="reports.html" class="active">Reports</a>
+            <a href="settings.html">Settings</a>
+            <span id="userDisplay" class="user-badge">👤 Manager</span>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+    </nav>
     <main class="dashboard">
+        <h1>📊 Reports & Analytics</h1>
 
-        <div class="page-header">
-            <div>
-                <h1>📊 Reports & Analytics</h1>
-                <p>Live data visualization and trends</p>
-            </div>
-            <div class="header-time">
-                🕐 Last Update: <span id="lastUpdateHeader">--</span>
+        <!-- Report Type Selection -->
+        <div class="section">
+            <h2>📋 Generate Report</h2>
+            <div class="report-controls">
+                <div class="form-group">
+                    <label>Report Type:</label>
+                    <select id="reportType">
+                        <option value="inventory">📦 Inventory Report</option>
+                        <option value="alerts">🔔 Alerts Report</option>
+                        <option value="temperature">🌡️ Temperature Report</option>
+                        <option value="wastage">🗑️ Wastage Analysis</option>
+                        <option value="full">📊 Full System Report</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date Range:</label>
+                    <select id="dateRange">
+                        <option value="today">Today</option>
+                        <option value="week" selected>Last 7 Days</option>
+                        <option value="month">Last 30 Days</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Export Format:</label>
+                    <select id="exportFormat">
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel (CSV)</option>
+                        <option value="json">JSON</option>
+                        <option value="html">HTML</option>
+                    </select>
+                </div>
+                <button onclick="generateReport()" class="action-btn">📊 Generate Report</button>
+                <button onclick="scheduleReport()" class="action-btn">⏰ Schedule</button>
             </div>
         </div>
 
-        <div class="summary-stats">
-            <div class="summary-stat">
-                <div class="label">🌡️ Temperature</div>
-                <div class="value temp" id="statTemp">--°C</div>
+        <!-- Report Preview -->
+        <div class="section">
+            <h2>📄 Report Preview</h2>
+            <div id="reportPreview" class="report-preview">
+                <p>Select a report type and click "Generate Report" to preview.</p>
             </div>
-            <div class="summary-stat">
-                <div class="label">📦 Total Stock</div>
-                <div class="value stock" id="statStock">--</div>
-            </div>
-            <div class="summary-stat">
-                <div class="label">⏰ Near Expiry</div>
-                <div class="value expiry" id="statExpiry">--</div>
-            </div>
-            <div class="summary-stat">
-                <div class="label">📊 System Status</div>
-                <div class="value status" id="statStatus">--</div>
+            <div class="action-buttons">
+                <button onclick="exportReport('pdf')" class="action-btn" id="exportPdfBtn">📥 Export PDF</button>
+                <button onclick="exportReport('excel')" class="action-btn" id="exportExcelBtn">📥 Export Excel</button>
+                <button onclick="exportReport('json')" class="action-btn">📥 Export JSON</button>
+                <button onclick="printReport()" class="action-btn">🖨️ Print</button>
             </div>
         </div>
 
-        <div class="chart-wrapper">
-            <h3>🌡️ Temperature History <span class="badge">Last 20 readings</span></h3>
-            <div class="chart-container">
-                <canvas id="tempChart"></canvas>
+        <!-- Scheduled Reports -->
+        <div class="section">
+            <h2>⏰ Scheduled Reports</h2>
+            <div id="scheduledReportsList">
+                <p>No scheduled reports configured.</p>
             </div>
+            <button onclick="showScheduleModal()" class="action-btn">➕ Add Schedule</button>
         </div>
-
-        <div class="chart-wrapper">
-            <h3>📦 Stock Trends <span class="badge">Last 20 readings</span></h3>
-            <div class="chart-container">
-                <canvas id="stockChart"></canvas>
-            </div>
-        </div>
-
-        <div class="chart-wrapper">
-            <h3>🩸 Blood Group Distribution <span class="badge">Current stock</span></h3>
-            <div class="chart-container">
-                <canvas id="bloodChart"></canvas>
-            </div>
-        </div>
-
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
-            <button onclick="forceRefresh()" class="action-btn">🔄 Refresh Reports</button>
-            <button onclick="window.location.href='index.html'" class="action-btn secondary">📊 Back to Dashboard</button>
-        </div>
-
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    </script>
-    <script src="supabase-config.js">
-    </script>
-    <script>
-        // ============================================================
-        // BLOODSAFE IoT - REPORTS PAGE (GUARANTEED WORKING)
-        // ============================================================
+    <!-- Schedule Modal -->
+    <div id="scheduleModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; justify-content:center; align-items:center;">
+        <div style="background:white; padding:30px; border-radius:12px; max-width:500px; width:90%;">
+            <h2>⏰ Schedule Report</h2>
+            <div class="form-group">
+                <label>Report Type:</label>
+                <select id="scheduleReportType">
+                    <option value="inventory">Inventory Report</option>
+                    <option value="alerts">Alerts Report</option>
+                    <option value="temperature">Temperature Report</option>
+                    <option value="wastage">Wastage Analysis</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Frequency:</label>
+                <select id="scheduleFrequency">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Recipients (email):</label>
+                <input type="email" id="scheduleRecipients" placeholder="manager@suwasetha.lk" multiple>
+            </div>
+            <div class="action-buttons">
+                <button onclick="saveSchedule()" class="action-btn">💾 Save Schedule</button>
+                <button onclick="closeScheduleModal()" class="action-btn danger">Cancel</button>
+            </div>
+        </div>
+    </div>
 
-        let tempChart = null;
-        let stockChart = null;
-        let bloodChart = null;
-        let historyData = [];
-        const MAX_POINTS = 20;
-
-        // ============================================================
-        // PAGE LOAD
-        // ============================================================
-        document.addEventListener('DOMContentLoaded', function() {
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            document.getElementById('userDisplay').textContent = '👤 ' + user.username;
-
-            // Force initial data with sample
-            generateSampleData();
-
-            setTimeout(() => {
-                refreshData();
-            }, 500);
-
-            setInterval(refreshData, 10000);
-        });
-
-        // ============================================================
-        // GENERATE SAMPLE DATA (So charts show immediately)
-        // ============================================================
-        function generateSampleData() {
-            const now = Date.now();
-            for (let i = 0; i < 10; i++) {
-                historyData.push({
-                    temperature: 4 + Math.sin(i / 2) * 2.5,
-                    stock: 85 + Math.sin(i / 3) * 12,
-                    time: new Date(now - (10 - i) * 60000).toLocaleTimeString()
-                });
-            }
-            console.log('📊 Sample data generated:', historyData);
-        }
-
-        // ============================================================
-        // FETCH DATA
-        // ============================================================
-        async function refreshData() {
-            try {
-                console.log('📡 Fetching data for reports...');
-
-                const { data, error } = await sb
-                    .from('sensors')
-                    .select('*')
-                    .order('id', { ascending: false })
-                    .limit(1);
-
-                if (error) {
-                    console.error('❌ Supabase error:', error);
-                    return;
-                }
-
-                if (data && data.length > 0) {
-                    const latest = data[0];
-                    console.log('✅ Latest data:', latest);
-
-                    // 🔥 USE REAL TEMPERATURE OR GENERATE VARIATION
-                    let temp = latest.temperature || 0;
-                    // If temperature is static (like 24°C), add slight variation
-                    if (temp > 20) {
-                        temp = temp + (Math.random() - 0.5) * 0.8;
-                    }
-
-                    document.getElementById('statTemp').textContent = temp.toFixed(1) + '°C';
-                    document.getElementById('statStock').textContent = latest.blood_stock || 0;
-                    document.getElementById('statExpiry').textContent = latest.expiry_count || 0;
-                    document.getElementById('statStatus').textContent = latest.status || 'NORMAL';
-                    document.getElementById('lastUpdateHeader').textContent = new Date().toLocaleTimeString();
-
-                    // Add to history
-                    historyData.push({
-                        temperature: temp,
-                        stock: latest.blood_stock || 0,
-                        time: new Date().toLocaleTimeString()
-                    });
-
-                    if (historyData.length > MAX_POINTS) {
-                        historyData.shift();
-                    }
-
-                    console.log('📊 History data:', historyData);
-
-                    // Update charts
-                    updateCharts(latest);
-                }
-
-            } catch (error) {
-                console.error('❌ Error:', error.message);
-            }
-        }
-
-        // ============================================================
-        // UPDATE CHARTS
-        // ============================================================
-        function updateCharts(latest) {
-            // Ensure we have data
-            if (historyData.length === 0) {
-                generateSampleData();
-            }
-
-            const labels = historyData.map(d => d.time);
-            const tempData = historyData.map(d => d.temperature);
-            const stockData = historyData.map(d => d.stock);
-
-            console.log('📊 Labels:', labels);
-            console.log('📊 Temp Data:', tempData);
-            console.log('📊 Stock Data:', stockData);
-
-         if (tempChart) tempChart.destroy();
-
-    const tempCtx = document.getElementById('tempChart');
-    if (tempCtx) {
-        tempChart = new Chart(tempCtx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Temperature (°C)',
-                    data: tempData,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.15)',
-                    borderWidth: 4,
-                    fill: true,
-                    tension: 0.3,
-                    pointBackgroundColor: '#3b82f6',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: true, position: 'top' }
-                },
-                scales: {
-                    y: {
-                        min: 0,
-                        max: 30,                    // ← MAX 30
-                        title: { display: true, text: 'Temperature (°C)' },
-                        grid: { color: 'rgba(0,0,0,0.06)' },
-                        ticks: {
-                            stepSize: 5,           // ← 0, 5, 10, 15, 20, 25, 30
-                            font: { size: 11 }
-                        }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: {
-                            maxTicksLimit: 6,
-                            maxRotation: 0,
-                            autoSkip: true,
-                            font: { size: 11 }
-                        }
-                    }
-                }
-            }
-        });
-        console.log('✅ Temperature chart created');
-    }
-
-            // ============================================================
-            // STOCK CHART
-            // ============================================================
-            if (stockChart) stockChart.destroy();
-
-            const stockCtx = document.getElementById('stockChart');
-            if (stockCtx) {
-                stockChart = new Chart(stockCtx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Blood Stock (units)',
-                            data: stockData,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                            borderWidth: 4,
-                            fill: true,
-                            tension: 0.3,
-                            pointBackgroundColor: '#10b981',
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 2,
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: true, position: 'top' }
-                        },
-                        scales: {
-                            y: {
-                                min: 0,
-                                max: 150,
-                                title: { display: true, text: 'Stock (units)' },
-                                grid: { color: 'rgba(0,0,0,0.06)' }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 10 }
-                            }
-                        }
-                    }
-                });
-                console.log('✅ Stock chart created');
-            }
-
-            // ============================================================
-            // BLOOD GROUP DISTRIBUTION
-            // ============================================================
-            if (bloodChart) bloodChart.destroy();
-
-            const bloodCtx = document.getElementById('bloodChart');
-            if (bloodCtx) {
-                const stock = latest?.blood_stock || 85;
-                const percentages = {
-                    'A+': 0.24, 'A-': 0.12, 'B+': 0.18, 'B-': 0.09,
-                    'O+': 0.21, 'O-': 0.07, 'AB+': 0.06, 'AB-': 0.03
-                };
-                const groups = Object.keys(percentages);
-                const quantities = groups.map(g => Math.round(stock * percentages[g]));
-                const colors = ['#3b82f6', '#60a5fa', '#10b981', '#34d399', '#f59e0b', '#fbbf24', '#8b5cf6', '#a78bfa'];
-
-                bloodChart = new Chart(bloodCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: groups,
-                        datasets: [{ data: quantities, backgroundColor: colors, borderWidth: 3, borderColor: '#ffffff' }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { position: 'right', labels: { font: { size: 12 } } } },
-                        cutout: '60%'
-                    }
-                });
-                console.log('✅ Blood chart created');
-            }
-        }
-
-        
-        function forceRefresh() {
-            historyData = [];
-            generateSampleData();
-            refreshData();
-        }
-
-       
-        function logout() {
-            localStorage.removeItem('user');
-            window.location.href = 'login.html';
-        }
-    </script>
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+    <script src="reports.js"></script>
 </body>
-</html>
+</html>  
