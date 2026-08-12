@@ -1,7 +1,18 @@
-// ============================================================
-// REPORTS.JS - ENHANCED REPORT GENERATION
-// ============================================================
 
+
+// Check if supabase client exists
+if (typeof supabase === 'undefined') {
+    console.error('❌ Supabase client not found! Make sure supabase-config.js is loaded first.');
+}
+
+// Helper function to safely access supabase
+function getSupabase() {
+    if (typeof supabase === 'undefined') {
+        console.error('❌ Supabase client not available');
+        return null;
+    }
+    return supabase;
+}
 // Load report data
 async function generateReport() {
     const reportType = document.getElementById('reportType').value;
