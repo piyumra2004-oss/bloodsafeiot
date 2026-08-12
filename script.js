@@ -1,3 +1,17 @@
+// ============================================================
+// SUPABASE CLIENT INITIALIZATION
+// ============================================================
+
+const SUPABASE_URL = 'https://jqdnxrmulgndvcotnfmu.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_zeKhPNaF8ApBtD2J6ktD1w_sS6k-QZH';
+
+// Create supabase client
+const sb = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+console.log('✅ Supabase client initialized!');
+console.log('✅ sb.from available:', typeof sb.from === 'function');
+
+// ============================================================
 let updateInterval = null;
 
 // ============================================================
@@ -18,12 +32,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     console.log('👤 User:', user.username);
     
+    // Load theme
+    loadTheme();
+    
     fetchDashboardData();
     updateInterval = setInterval(fetchDashboardData, 30000);
 });
 
 // ============================================================
-// MAIN FETCH FUNCTION (FIXED - Counts low stock from inventory)
+// MAIN FETCH FUNCTION
 // ============================================================
 async function fetchDashboardData() {
     try {
@@ -96,6 +113,10 @@ async function fetchDashboardData() {
         
         console.log('📊 Dashboard Data:', dashboardData);
         console.log('📊 Low stock count:', lowStockCount);
+        
+        // Check and send notifications
+        checkAndNotify(dashboardData);
+        
         updateCurrentPage(dashboardData);
         
     } catch (error) {
@@ -120,11 +141,16 @@ function updateCurrentPage(data) {
         updateAlertsPage(data);
     }
 }
+
+// ============================================================
+// DARK MODE
+// ============================================================
 function toggleDarkMode() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
     localStorage.setItem('theme', isDark ? 'light' : 'dark');
-    document.getElementById('darkModeBtn').textContent = isDark ? '🌙 Dark Mode' : '☀️ Light Mode';
+    const btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = isDark ? '🌙 Dark Mode' : '☀️ Light Mode';
 }
 
 function loadTheme() {
@@ -133,6 +159,64 @@ function loadTheme() {
     const btn = document.getElementById('darkModeBtn');
     if (btn) btn.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
 }
+
+// ============================================================
+// BROWSER NOTIFICATIONS
+// ============================================================
+function enableNotifications() {
+    if (!("Notification" in window)) {
+        alert("This browser doesn't support notifications");
+        return;
+    }
+    
+    if (Notification.permission === "granted") {
+        alert("✅ Notifications already enabled!");
+    } else if (Notification.permission === "denied") {
+        alert("❌ Notifications blocked. Please enable in browser settings.");
+    } else {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                alert("✅ Notifications enabled!");
+            }
+        });
+    }
+}
+
+function sendBrowserNotification(title, message, severity) {
+    if (Notification.permission === "granted") {
+        new Notification(title, {
+            body: message,
+            icon: severity === 'CRITICAL' ? '🔴' : '🟡',
+            tag: 'bloodsafe-alert',
+            requireInteraction: true
+        });
+    }
+}
+
+function checkAndNotify(dashboardData) {
+    if (dashboardData.lowStockCount > 0) {
+        sendBrowserNotification(
+            '⚠️ LOW STOCK ALERT',
+            `${dashboardData.lowStockCount} blood types are running low!`,
+            'WARNING'
+        );
+    }
+    if (dashboardData.temperature > 8) {
+        sendBrowserNotification(
+            '🚨 CRITICAL TEMPERATURE',
+            `Temperature is ${dashboardData.temperature}°C!`,
+            'CRITICAL'
+        );
+    }
+    if (dashboardData.expiry > 3) {
+        sendBrowserNotification(
+            '⚠️ EXPIRY ALERT',
+            `${dashboardData.expiry} blood bags are near expiry!`,
+            'WARNING'
+        );
+    }
+}
+
 // ============================================================
 // UPDATE DASHBOARD
 // ============================================================
@@ -296,6 +380,9 @@ function updateBloodGrid(inventory) {
             <p class="minimum">Min: ${item.minimum_stock}</p>
             <span class="status-badge ${status.class}">${status.label}</span>
         `;
+        // Add data attributes for filtering
+        card.dataset.bloodGroup = item.blood_group;
+        card.dataset.status = status.class;
         grid.appendChild(card);
     });
 }
@@ -510,6 +597,92 @@ function filterAlerts(filter) {
 }
 
 // ============================================================
+// EXPORT FUNCTIONS
+// ============================================================
+async function exportDashboardData() {
+    try {
+        const { data: inventory, error } = await sb
+            .from('inventory')
+            .select('*')
+            .order('blood_group');
+        
+        if (error) throw error;
+        
+        // Create CSV
+        let csv = 'Blood Group,Quantity,Minimum Stock,Days Until Expiry,Status\n';
+        inventory.forEach(item => {
+            const status = item.quantity < item.minimum_stock ? 'LOW' : 'OK';
+            const days = item.days_until_expiry !== null ? item.days_until_expiry : 'N/A';
+            csv += `${item.blood_group},${item.quantity},${item.minimum_stock},${days},${status}\n`;
+        });
+        
+        // Download
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `bloodsafe_export_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        showToast('✅ Data exported successfully!', 'success');
+    } catch (error) {
+        showToast('❌ Export failed: ' + error.message, 'error');
+    }
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// ============================================================
+// SEARCH & FILTER INVENTORY
+// ============================================================
+function filterInventory() {
+    const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    const filterStatus = document.getElementById('statusFilter')?.value || '';
+    
+    const cards = document.querySelectorAll('.blood-card');
+    cards.forEach(card => {
+        const name = card.dataset.bloodGroup?.toLowerCase() || '';
+        const status = card.dataset.status || '';
+        
+        let show = true;
+        if (searchTerm && !name.includes(searchTerm)) show = false;
+        if (filterStatus && status !== filterStatus) show = false;
+        
+        card.style.display = show ? 'block' : 'none';
+    });
+}
+
+// ============================================================
+// MANUAL REFRESH
+// ============================================================
+async function manualRefresh() {
+    const btn = document.getElementById('refreshBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Refreshing...';
+    }
+    
+    try {
+        await fetchDashboardData();
+        showToast('✅ Data refreshed successfully!', 'success');
+    } catch (error) {
+        showToast('❌ Refresh failed: ' + error.message, 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '🔄 Refresh';
+        }
+    }
+}
+
+// ============================================================
 // STOCK MANAGEMENT
 // ============================================================
 async function updateStock(change) {
@@ -564,13 +737,6 @@ function logout() {
 }
 
 // ============================================================
-// EXPOSE FUNCTIONS TO HTML
-// ============================================================
-window.refreshData = refreshDataManually;
-window.logout = logout;
-window.filterAlerts = filterAlerts;
-window.updateStock = updateStock;
-// ============================================================
 // MOBILE MENU TOGGLE FUNCTION
 // ============================================================
 function toggleMobileMenu() {
@@ -585,7 +751,23 @@ function toggleMobileMenu() {
     }
 }
 
-// Close mobile menu when a link is clicked
+// ============================================================
+// EXPOSE FUNCTIONS TO HTML
+// ============================================================
+window.refreshData = refreshDataManually;
+window.logout = logout;
+window.filterAlerts = filterAlerts;
+window.updateStock = updateStock;
+window.toggleDarkMode = toggleDarkMode;
+window.enableNotifications = enableNotifications;
+window.exportDashboardData = exportDashboardData;
+window.filterInventory = filterInventory;
+window.manualRefresh = manualRefresh;
+window.toggleMobileMenu = toggleMobileMenu;
+
+// ============================================================
+// CLOSE MOBILE MENU ON LINK CLICK
+// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     const navLinks = document.querySelectorAll('.nav-links a');
     navLinks.forEach(link => {
@@ -600,7 +782,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Close menu when clicking outside (optional)
+// ============================================================
+// CLOSE MENU WHEN CLICKING OUTSIDE
+// ============================================================
 document.addEventListener('click', function(event) {
     const nav = document.querySelector('.navbar');
     const menu = document.getElementById('navLinks');
