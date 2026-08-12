@@ -1,12 +1,15 @@
 // ============================================================
-// REPORTS.JS - ENHANCED REPORT GENERATION (FIXED)
+// REPORTS.JS - ENHANCED REPORT GENERATION (WORKING)
 // ============================================================
 
-// Check if supabase client exists
+// Check if supabase client exists and is working
 if (typeof supabase === 'undefined') {
-    console.error('❌ Supabase client not found! Make sure supabase-config.js is loaded first.');
+    console.error('❌ Supabase client not found!');
+} else if (typeof supabase.from !== 'function') {
+    console.error('❌ Supabase client exists but .from() is not a function!');
+    console.log('🔍 supabase object:', supabase);
 } else {
-    console.log('✅ Supabase client found in reports.js');
+    console.log('✅ Supabase client found and ready in reports.js');
 }
 
 // ============================================================
@@ -26,6 +29,11 @@ async function generateReport() {
     previewDiv.innerHTML = '<p>⏳ Generating report...</p>';
     
     try {
+        // Check if supabase is available
+        if (typeof supabase === 'undefined' || typeof supabase.from !== 'function') {
+            throw new Error('Supabase client is not available. Please refresh and try again.');
+        }
+        
         let data;
         let html = '';
         
@@ -67,7 +75,6 @@ async function generateReport() {
 // ============================================================
 
 async function getInventoryReport() {
-    // ✅ Using supabase (correct spelling)
     const { data, error } = await supabase
         .from('inventory')
         .select('*')
@@ -430,13 +437,11 @@ function exportExcel(content, title, date) {
     
     let csv = '';
     
-    // Get headers
     const headers = table.querySelectorAll('thead th');
     const headerRow = [];
     headers.forEach(th => headerRow.push(th.textContent.trim()));
     csv += headerRow.join(',') + '\n';
     
-    // Get rows
     const rows = table.querySelectorAll('tbody tr');
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
@@ -448,7 +453,6 @@ function exportExcel(content, title, date) {
         csv += rowData.join(',') + '\n';
     });
     
-    // Download
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -464,13 +468,11 @@ function exportJSON(content, title, date) {
         return;
     }
     
-    // Get headers
     const headers = [];
     table.querySelectorAll('thead th').forEach(th => {
         headers.push(th.textContent.trim());
     });
     
-    // Get data rows
     const data = [];
     table.querySelectorAll('tbody tr').forEach(row => {
         const rowData = {};
@@ -592,7 +594,6 @@ async function loadScheduledReports() {
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if we're on the reports page
     if (document.getElementById('reportPreview')) {
         console.log('📊 Reports page loaded');
         generateReport();
@@ -610,4 +611,4 @@ window.printReport = printReport;
 window.showScheduleModal = showScheduleModal;
 window.closeScheduleModal = closeScheduleModal;
 window.saveSchedule = saveSchedule;
-window.scheduleReport = showScheduleModal; // Alias for HTML button
+window.scheduleReport = showScheduleModal;
