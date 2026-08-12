@@ -1,10 +1,10 @@
 // ============================================================
-// REPORTS.JS - ENHANCED REPORT GENERATION (WORKING)
+// REPORTS.JS - ENHANCED REPORT GENERATION (FIXED)
 // ============================================================
 
 // Check if supabase client exists
 if (typeof supabase === 'undefined') {
-    console.error('❌ Supabase client not found!');
+    console.error('❌ Supabase client not found! Make sure supabase-config.js is loaded first.');
 } else {
     console.log('✅ Supabase client found in reports.js');
 }
@@ -63,11 +63,11 @@ async function generateReport() {
 }
 
 // ============================================================
-// REPORT DATA FETCHING FUNCTIONS (DIRECT - NO HELPER)
+// REPORT DATA FETCHING FUNCTIONS
 // ============================================================
 
 async function getInventoryReport() {
-    // ✅ Use global supabase directly
+    // ✅ Using supabase (correct spelling)
     const { data, error } = await supabase
         .from('inventory')
         .select('*')
