@@ -1,16 +1,15 @@
 // ============================================================
-// SUPABASE CLIENT INITIALIZATION
+// SUPABASE CLIENT - Using Existing 'supabase' from supabase-config.js
 // ============================================================
 
-const SUPABASE_URL = 'https://jqdnxrmulgndvcotnfmu.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_zeKhPNaF8ApBtD2J6ktD1w_sS6k-QZH';
+// Check if supabase client is available
+if (typeof supabase === 'undefined') {
+    console.error('❌ Supabase client not found!');
+} else {
+    console.log('✅ Supabase client found!');
+    console.log('✅ supabase.from available:', typeof supabase.from === 'function');
+}
 
-// Create supabase client - using the global supabaseClient from CDN
-const supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Log to confirm
-console.log('✅ Supabase client initialized!');
-console.log('✅ supabase.from available:', typeof supabase.from === 'function');
 // ============================================================
 let updateInterval = null;
 
@@ -40,13 +39,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ============================================================
-// MAIN FETCH FUNCTION
+// MAIN FETCH FUNCTION - Using 'supabase' (not 'sb')
 // ============================================================
 async function fetchDashboardData() {
     try {
         console.log('📡 Fetching data from Supabase...');
         
-        const { data: sensorData, error: sensorError } = await sb
+        // ✅ Use 'supabase' instead of 'sb'
+        const { data: sensorData, error: sensorError } = await supabase
             .from('sensors')
             .select('*')
             .order('id', { ascending: false })
@@ -56,7 +56,7 @@ async function fetchDashboardData() {
             console.error('❌ Sensor error:', sensorError);
         }
         
-        const { data: inventoryData, error: inventoryError } = await sb
+        const { data: inventoryData, error: inventoryError } = await supabase
             .from('inventory')
             .select('*')
             .order('blood_group');
@@ -65,7 +65,7 @@ async function fetchDashboardData() {
             console.error('❌ Inventory error:', inventoryError);
         }
         
-        const { data: alertData, error: alertError } = await sb
+        const { data: alertData, error: alertError } = await supabase
             .from('alerts')
             .select('*')
             .order('created_at', { ascending: false })
@@ -90,7 +90,6 @@ async function fetchDashboardData() {
                     nearExpiry++;
                 }
                 
-                // ✅ Count ALL items below minimum_stock
                 if (item.quantity < item.minimum_stock) {
                     lowStockCount++;
                 }
@@ -380,7 +379,6 @@ function updateBloodGrid(inventory) {
             <p class="minimum">Min: ${item.minimum_stock}</p>
             <span class="status-badge ${status.class}">${status.label}</span>
         `;
-        // Add data attributes for filtering
         card.dataset.bloodGroup = item.blood_group;
         card.dataset.status = status.class;
         grid.appendChild(card);
@@ -468,25 +466,22 @@ function updateRecentAlerts(alerts) {
 }
 
 // ============================================================
-// INVENTORY PAGE (FIXED)
+// INVENTORY PAGE
 // ============================================================
 function updateInventoryPage(data) {
     console.log('📋 Updating inventory page...');
     
-    // Total units
     const totalUnits = document.getElementById('totalUnits');
     if (totalUnits) {
         totalUnits.textContent = data.stock || 0;
     }
     
-    // Blood Types
     const bloodTypes = document.getElementById('bloodTypes');
     if (bloodTypes) {
         const count = data.inventory ? data.inventory.length : 0;
         bloodTypes.textContent = count + ' Types';
     }
     
-    // Low Stock Types - Count from inventory
     let lowStockTypes = 0;
     if (data.inventory) {
         data.inventory.forEach(item => {
@@ -501,7 +496,6 @@ function updateInventoryPage(data) {
         lowStockCount.textContent = lowStockTypes;
     }
     
-    // Inventory table
     const tbody = document.getElementById('inventoryBody');
     if (!tbody) return;
     
@@ -601,14 +595,13 @@ function filterAlerts(filter) {
 // ============================================================
 async function exportDashboardData() {
     try {
-        const { data: inventory, error } = await sb
+        const { data: inventory, error } = await supabase
             .from('inventory')
             .select('*')
             .order('blood_group');
         
         if (error) throw error;
         
-        // Create CSV
         let csv = 'Blood Group,Quantity,Minimum Stock,Days Until Expiry,Status\n';
         inventory.forEach(item => {
             const status = item.quantity < item.minimum_stock ? 'LOW' : 'OK';
@@ -616,7 +609,6 @@ async function exportDashboardData() {
             csv += `${item.blood_group},${item.quantity},${item.minimum_stock},${days},${status}\n`;
         });
         
-        // Download
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -687,7 +679,7 @@ async function manualRefresh() {
 // ============================================================
 async function updateStock(change) {
     try {
-        const { data, error } = await sb
+        const { data, error } = await supabase
             .from('sensors')
             .select('blood_stock')
             .order('id', { ascending: false })
@@ -698,7 +690,7 @@ async function updateStock(change) {
         const currentStock = data && data.length > 0 ? data[0].blood_stock : 85;
         const newStock = Math.max(0, Math.min(150, currentStock + change));
         
-        await sb
+        await supabase
             .from('sensors')
             .update({ blood_stock: newStock })
             .eq('id', 1);
@@ -712,7 +704,7 @@ async function updateStock(change) {
 }
 
 // ============================================================
-// REFRESH BUTTON (FIXED - No Recursion)
+// REFRESH BUTTON
 // ============================================================
 function refreshDataManually() {
     console.log('🔄 Manual refresh triggered');
@@ -725,7 +717,7 @@ function refreshDataManually() {
 }
 
 // ============================================================
-// LOGOUT (FIXED)
+// LOGOUT
 // ============================================================
 function logout() {
     localStorage.removeItem('user');
@@ -737,7 +729,7 @@ function logout() {
 }
 
 // ============================================================
-// MOBILE MENU TOGGLE FUNCTION
+// MOBILE MENU TOGGLE
 // ============================================================
 function toggleMobileMenu() {
     const navLinks = document.getElementById('navLinks');
