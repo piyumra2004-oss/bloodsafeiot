@@ -120,7 +120,19 @@ function updateCurrentPage(data) {
         updateAlertsPage(data);
     }
 }
+function toggleDarkMode() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    document.getElementById('darkModeBtn').textContent = isDark ? '🌙 Dark Mode' : '☀️ Light Mode';
+}
 
+function loadTheme() {
+    const theme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    const btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
 // ============================================================
 // UPDATE DASHBOARD
 // ============================================================
